@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">BLEModule</string>
+    <string name="welcome_message">Use me to scan nearby BLE advertisers</string>
+    <string name="button_scan">SCAN</string>
+    <string name="button_stop">STOP</string>
+</resources>
