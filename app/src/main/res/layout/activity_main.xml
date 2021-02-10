@@ -20,7 +20,8 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/welcome_message"
         android:text="@string/button_scan"
-        android:layout_marginTop="20dp">
+        android:layout_marginTop="20dp"
+        android:onClick="startScan">
 
     </Button>
 
@@ -31,7 +32,8 @@
         android:layout_below="@id/welcome_message"
         android:layout_toEndOf="@id/scan_button"
         android:text="@string/button_stop"
-        android:layout_marginTop="20dp">
+        android:layout_marginTop="20dp"
+        android:onClick="stopScan">
 
     </Button>
 
