@@ -3,4 +3,6 @@
     <string name="welcome_message">Use me to scan nearby BLE advertisers</string>
     <string name="button_scan">SCAN</string>
     <string name="button_stop">STOP</string>
+
+    <string name="ble_not_supported">Your device does not support Bluetooth Low Energy</string>
 </resources>
