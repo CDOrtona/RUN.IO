@@ -4,7 +4,12 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothManager;
+import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
@@ -17,30 +22,30 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.LinearLayout;
+import android.widget.EditText;
 
 import android.widget.Toast;
-
-import java.util.ArrayList;
-
 
 public class MainActivity extends AppCompatActivity {
 
     private final int REQUEST_ENABLE_BT = 1;
     private final int REQUEST_FINE_LOCATION = 2;
 
-    private BluetoothManager bluetoothManager;
+    BluetoothManager bluetoothManager;
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothLeScanner bluetoothLeScanner;
     private boolean scanning = false;
-    //private Handler handler; delete
+    DeviceScanned deviceScanned;
+
     //this end the scan every 10 seconds
     //it's very important as in a LE application we want to reduce battery-intensive tasks
-    private static final long SCAN_PERIOD = 20000;
-    DeviceScanned deviceScanned;
-    ArrayList<DeviceScanned> listScannedDevices;
+    private static final long SCAN_PERIOD = 200000;
+
+    //GATT connection
+    BluetoothGatt gatt;
+
+    //debug garbage
+    EditText editText;
 
 
     @Override
@@ -48,21 +53,19 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //debug garbage
+        editText = findViewById(R.id.editText);
+
         //initialize bluetooth adapter
         bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         bluetoothAdapter = bluetoothManager.getAdapter();
 
-        //initialize scan
+        //initialize scan dependencies
         bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
-
+        deviceScanned = new DeviceScanned();
 
         checkBleStatus();
         grantLocationPermissions();
-
-        listScannedDevices = new ArrayList<>();
-
-
-
 
     }
 
@@ -71,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
 
         //this checks on whether the BLE adapter is integrated in the device or not
+        //the app won't work with classic Bluetooth
         if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             Toast.makeText(this, R.string.ble_not_supported, Toast.LENGTH_SHORT).show();
             finish();
@@ -138,10 +142,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //this starts the scan of the BLE advertiser nearby
     public void startScan(View v){
         if(!scanning){
 
-            //disconnectGattServer();
+            //this removes all the entries in the map from the previous scans if they occurred
+            deviceScanned.flush();
+
+            disconnectGattServer();
 
             //the handler is used to schedule an event to happen at some point in the future
             //in this case the method postDelayed causes the runnable to be added to the message queue
@@ -152,7 +160,7 @@ public class MainActivity extends AppCompatActivity {
                     scanning = false;
                     //this's going to stop the scan if the user doesn't stop it before SCAN_PERIOD
                     bluetoothLeScanner.stopScan(leScanCallBack);
-                    Log.d("startScan","scanning has stopted after time elapsed");
+                    Log.d("startScan","scanning has stopped after time elapsed");
                 }
             }, SCAN_PERIOD);
 
@@ -163,41 +171,109 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //callBack method used to catch the result of startScan()
-    private ScanCallback leScanCallBack = new ScanCallback() {
-        @Override
-        public void onScanResult(int callbackType, ScanResult result) {
-            super.onScanResult(callbackType, result);
-            deviceScanned = new DeviceScanned();
-            deviceScanned.setDeviceName(result.getDevice().getName());
-            deviceScanned.setRssi(result.getRssi());
-            deviceScanned.setAlias(result.getDevice().getAlias());
-            deviceScanned.setAddress(result.getDevice().getAddress());
-            deviceScanned.setBondState(result.getDevice().getBondState());
-            listScannedDevices.add(deviceScanned);
-        }
-
-        public void onScanFailed(int errorCode) {
-            Log.e("leScanCallBack" ,"scan call back has failed");
-        }
-    };
-
+    //this stops the scan before the time elapses
+    // when the button is pressed
     public void stopScan(View v){
         if(scanning){
             bluetoothLeScanner.stopScan(leScanCallBack);
             Log.d("stopScan", "BLE scanner has been stopped");
             //the following code is debug garbage, it needs to be deleted
-            for(int i=0; i<listScannedDevices.size(); i++){
-                System.out.println("number of devices scanned are: " + listScannedDevices.size());
-                System.out.println(listScannedDevices.get(i));
-            }
-            showListOfBle();
+            deviceScanned.printDeviceInfo();
         }
-
     }
 
+    //callBack method used to catch the result of startScan()
+    //this is an abstract class
+    private ScanCallback leScanCallBack = new ScanCallback() {
+        @Override
+        //ScanResult is the result of the BLE scan
+        //its method getDevice() permits to retrieve a BluetoothDevice object
+        // which I use to gain info about the BLE advertisers scanned
+        //callBackType determines how this callback was triggered
+        public void onScanResult(int callbackType, ScanResult result) {
+            super.onScanResult(callbackType, result);
+            deviceScanned.add(result);
+        }
+
+        public void onScanFailed(int errorCode) {
+            Log.e("leScanCallBack" ,"scan call back has failed with errorCode: " + errorCode);
+        }
+    };
+
+    //this method will create a new connection with the GATT server of the BLE device specified
+    public void connectToSelectedDevice(View v){
+        //hard coded
+        Toast.makeText(this, "Connecting...", Toast.LENGTH_SHORT).show();
+        BluetoothDevice selectedBleDevice = deviceScanned.getBleDevice(editText.getText().toString());
+        if(selectedBleDevice != null) {
+            gatt = selectedBleDevice.connectGatt(getBaseContext(), true, gattCallBack);
+            Log.d("connectToSelectedDevice", "connecting...");
+        }
+        else {
+            //hard coded
+            Toast.makeText(this, "incorrect address, device not found!", Toast.LENGTH_LONG).show();
+            Log.w("connectToSelectedDevice", "input address doesn't match any key in the map");
+        }
+    }
+
+    //this is an abstract method which handles back the results from connecting to the specified Gatt Server
+    BluetoothGattCallback gattCallBack = new BluetoothGattCallback() {
+        @Override
+        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+            super.onConnectionStateChange(gatt, status, newState);
+
+            /*if (status == BluetoothGatt.GATT_FAILURE) {
+                disconnectGattServer();
+                return;
+            } else if (status != BluetoothGatt.GATT_SUCCESS) {
+                // handle anything not SUCCESS as failure
+                disconnectGattServer();
+                return;
+            }*/
+
+            if (newState == BluetoothProfile.STATE_CONNECTED) {
+                //setConnected(true);
+                Log.d("onConnectionStateChange", "connected to Bluetooth successfully");
+                //hardCoded
+                gatt.discoverServices();
+                Log.d("onConnectionStateChange", "discoverServices started for results");
+            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                Log.d("onConnectionStateChange", "disconnecting from Bluetooth");
+                //hardCoded
+                Log.d("onConnectionStateChange", "disconnecting GATT server");
+                disconnectGattServer();
+            }
+        }
+
+        @Override
+        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+            super.onServicesDiscovered(gatt, status);
+
+        }
+
+        @Override
+        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            super.onCharacteristicRead(gatt, characteristic, status);
+        }
+
+        @Override
+        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+            super.onCharacteristicChanged(gatt, characteristic);
+        }
+    };
+
+
+    private void disconnectGattServer(){
+        if(gatt != null){
+            gatt.disconnect();
+            gatt.close();
+        }
+    }
+
+
+
     //debug garbage
-    private void showListOfBle(){
+    /*private void showListOfBle(){
 
         LinearLayout linearLayout = findViewById(R.id.linear_layout);
 
@@ -210,7 +286,7 @@ public class MainActivity extends AppCompatActivity {
 
             Button bleAdvertiser = new Button(this);
             bleAdvertiser.setLayoutParams(params);
-            bleAdvertiser.setText(listScannedDevices.get(i).getDeviceName() + " " + listScannedDevices.get(i).getBleAddress());
+            bleAdvertiser.setText(deviceScanned.getBleAddress(i));
             bleAdvertiser.setId(i);
 
             bleAdvertiser.setOnClickListener(new View.OnClickListener() {
@@ -224,7 +300,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-    }
+    }*/
 
 
 
@@ -232,3 +308,28 @@ public class MainActivity extends AppCompatActivity {
 
 
 }
+
+
+/*comments
+ *readCharacteristic(BluetoothGattCharacteristic characteristic)  result is caught by onCharacteristicRead() that is part of the abstract class BluetoothGattCallback https://developer.android.com/reference/android/bluetooth/BluetoothGatt#readCharacteristic(android.bluetooth.BluetoothGattCharacteristic)
+ *
+ * onCharacteristicChanged (BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) this notifies a characteristic has changed
+ *
+ * onCharacteristicChanged (BluetoothGatt gatt,BluetoothGattCharacteristic characteristic)
+
+       private final BluetoothGattCallback btleGattCallback = new BluetoothGattCallback() {
+           @override
+           onCharacteristicChanged (BluetoothGatt gatt,BluetoothGattCharacteristic characteristic){
+
+               gatt.readCharacteristic(characteristic)
+            }
+           @override
+           onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic){
+              string temperature = characteristic;
+           }
+        }
+        *
+        *
+
+
+ */

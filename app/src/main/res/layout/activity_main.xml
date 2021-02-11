@@ -37,24 +37,27 @@
 
     </Button>
 
-    <ScrollView
-        android:id="@+id/scrollView"
+
+    <EditText
+        android:id="@+id/editText"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_below="@id/scan_button"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="10sp">
+        android:layout_marginTop="28dp"
+        android:hint="enter adddress"
+        android:textSize="15sp">
 
+    </EditText>
 
-        <LinearLayout
-            android:id="@+id/linear_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/scan_button"
+        android:layout_marginStart="87dp"
+        android:layout_marginTop="28dp"
+        android:layout_alignRight="@id/editText"
+        android:onClick="connectToSelectedDevice"
+        android:text="Connect"/>
 
-
-        </LinearLayout>
-
-    </ScrollView>
 
 </RelativeLayout>
