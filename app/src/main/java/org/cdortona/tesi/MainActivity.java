@@ -8,6 +8,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.BluetoothLeScanner;
@@ -26,6 +27,15 @@ import android.widget.EditText;
 
 import android.widget.Toast;
 
+import java.util.List;
+
+/**
+ * Cristian D'Ortona
+ *
+ * TESI DI LAUREA IN INGEGNERIA ELETTRONICA E DELLE TELECOMUNICAZIONI
+ *
+ */
+
 public class MainActivity extends AppCompatActivity {
 
     private final int REQUEST_ENABLE_BT = 1;
@@ -43,6 +53,10 @@ public class MainActivity extends AppCompatActivity {
 
     //GATT connection
     BluetoothGatt gatt;
+    List<BluetoothGattService> gattServices;
+    BluetoothGattService gattMainService;
+    List<BluetoothGattCharacteristic> gattCharacteristics;
+    BluetoothGattCharacteristic gattCharacteristicTemp, gattCharacteristicHearth;
 
     //debug garbage
     EditText editText;
@@ -60,9 +74,10 @@ public class MainActivity extends AppCompatActivity {
         bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         bluetoothAdapter = bluetoothManager.getAdapter();
 
-        //initialize scan dependencies
+        //initialize scan variables
         bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
         deviceScanned = new DeviceScanned();
+
 
         checkBleStatus();
         grantLocationPermissions();
@@ -158,9 +173,10 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     scanning = false;
-                    //this's going to stop the scan if the user doesn't stop it before SCAN_PERIOD
+                    //this's going to stop the scan if the user doesn't stop it manually before SCAN_PERIOD
                     bluetoothLeScanner.stopScan(leScanCallBack);
                     Log.d("startScan","scanning has stopped after time elapsed");
+                    deviceScanned.flush();
                 }
             }, SCAN_PERIOD);
 
@@ -204,10 +220,11 @@ public class MainActivity extends AppCompatActivity {
     public void connectToSelectedDevice(View v){
         //hard coded
         Toast.makeText(this, "Connecting...", Toast.LENGTH_SHORT).show();
+        //getBleDevice() is used to return the Device whose key is the address inserted
         BluetoothDevice selectedBleDevice = deviceScanned.getBleDevice(editText.getText().toString());
         if(selectedBleDevice != null) {
             gatt = selectedBleDevice.connectGatt(getBaseContext(), true, gattCallBack);
-            Log.d("connectToSelectedDevice", "connecting...");
+            //Log.d("connectToSelectedDevice", "connecting...");
         }
         else {
             //hard coded
@@ -232,23 +249,43 @@ public class MainActivity extends AppCompatActivity {
             }*/
 
             if (newState == BluetoothProfile.STATE_CONNECTED) {
-                //setConnected(true);
+                //Toast.makeText(getBaseContext(), "Device Connected", Toast.LENGTH_SHORT).show();
                 Log.d("onConnectionStateChange", "connected to Bluetooth successfully");
-                //hardCoded
-                gatt.discoverServices();
+                discoverServicesDelay(gatt);
                 Log.d("onConnectionStateChange", "discoverServices started for results");
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                Log.d("onConnectionStateChange", "disconnecting from Bluetooth");
-                //hardCoded
+                //Toast.makeText(getBaseContext(), "Device Disconnected", Toast.LENGTH_SHORT).show();
                 Log.d("onConnectionStateChange", "disconnecting GATT server");
                 disconnectGattServer();
+            } else if(newState == BluetoothProfile.STATE_CONNECTING){
+                //Toast.makeText(getBaseContext(), "Connecting...", Toast.LENGTH_SHORT).show();
+                Log.d("onConnectionStateChange", "Connecting...");
             }
         }
 
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             super.onServicesDiscovered(gatt, status);
-
+            if(status == BluetoothGatt.GATT_SUCCESS){
+                Log.d("onServicesDiscovered", "remote device has been explored successfully for services");
+                //this is a list of all the services found
+                gattServices = gatt.getServices();
+                //method invoked to check if the ESP32 ATT service specified as a static constant actually exists
+                gattMainService = checkServiceExists(gattServices);
+                if(gattMainService != null){
+                    //since the ESP32 service exists, I'm saving all its characteristics in the list
+                    gattCharacteristics = gattMainService.getCharacteristics();
+                    //method invoked in order to gain the characteristics needed and assign them to the correct variables
+                    assignCharacteristics(gattCharacteristics);
+                } else {
+                    Log.e("onServicesDiscovered", "no service matches with the predefined one");
+                    //Toast.makeText(getBaseContext(), "No service found matches the predefined one", Toast.LENGTH_SHORT).show();
+                }
+            }
+            else if(status == BluetoothGatt.GATT_FAILURE){
+                Log.e("onServicesDiscovered", "remote device hasn't been explored successfully for services");
+                //Toast.makeText(getBaseContext(), "There has been a problem with the services discovery of the remote device", Toast.LENGTH_LONG).show();
+            }
         }
 
         @Override
@@ -262,6 +299,54 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    //background process which is going to cause the current thread to sleep for the specified time
+    //it's used to avoid problems during connection
+    private void discoverServicesDelay(BluetoothGatt gatt) {
+        try {
+            Thread.sleep(600);
+            Log.d("discoverServicesDelay", "delay before discovering services...");
+            gatt.discoverServices();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Could not find BLE services.", Toast.LENGTH_SHORT).show();
+
+        }
+    }
+
+    //this method checks if the service exists and return it if it does exist
+    private BluetoothGattService checkServiceExists(List<BluetoothGattService> foundServices){
+        for(int i=0; i<foundServices.size(); i++){
+            if(foundServices.get(i).getUuid().toString().equals(StaticResources.ESP32_SERVICE)) {
+                gattMainService = foundServices.get(i);
+                //Toast.makeText(getBaseContext(), "Service found", Toast.LENGTH_SHORT).show();
+                Log.d("checkServiceExists", "Service has been found, " + "UUID: " + foundServices.get(i).getUuid());
+                return gattMainService;
+            }
+        }
+        return null;
+    }
+
+    //this method is used to find the predefined characteristics and then assign them to their BluetoothGattCharacteristic object
+    private void assignCharacteristics(List<BluetoothGattCharacteristic> foundCharacteristics){
+        for(int i=0; i<foundCharacteristics.size(); i++){
+            switch(foundCharacteristics.get(i).getUuid().toString()) {
+                case StaticResources.ESP32_TEMP_CHARACTERISTIC:
+                    gattCharacteristicTemp = foundCharacteristics.get(i);
+                    Log.e("assignCharacteristics" , "charactersitic has been assigned correctly, " +
+                            + '\n' + "UUID: " + foundCharacteristics.get(i).getUuid());
+                    break;
+                case StaticResources.ESP32_HEARTH_CHARACTERISTIC:
+                    gattCharacteristicHearth = foundCharacteristics.get(i);
+                    Log.e("assignCharacteristics" , "charactersitic has been assigned correctly, " +
+                            + '\n' + "UUID: " + foundCharacteristics.get(i).getUuid());
+                    break;
+                default:
+                    //this happens when there is a characteristic in the service that isn't part of the predefined ones
+                    Log.e("assignCharacteristics", "Characteristic not listed in the predefined ones"
+                            + '\n' + "UUID: " + foundCharacteristics.get(i).getUuid());
+            }
+        }
+    }
 
     private void disconnectGattServer(){
         if(gatt != null){
