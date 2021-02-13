@@ -1,9 +1,10 @@
 <resources>
-    <string name="app_name">BLEModule</string>
-    <string name="welcome_message">Use me to scan nearby BLE advertisers</string>
+    <string name="app_name">BLEScanner</string>
+    <string name="welcome_message">BLE Scanner</string>
     <string name="button_scan">SCAN</string>
     <string name="button_stop">STOP</string>
 
     <string name="ble_not_supported">Your device does not support Bluetooth Low Energy</string>
     <string name="title_activity_main2">Main2Activity</string>
+    <string name="button_connect_gatt">Connect</string>
 </resources>

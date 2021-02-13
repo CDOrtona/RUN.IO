@@ -3,13 +3,19 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@color/background">
 
     <TextView
         android:id="@+id/welcome_message"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="36dp"
+        android:layout_marginTop="20dp"
         android:text="@string/welcome_message"
+        android:textColor="@color/text"
         android:textSize="20sp">
 
     </TextView>
@@ -19,45 +25,25 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/welcome_message"
-        android:text="@string/button_scan"
-        android:layout_marginTop="20dp"
-        android:onClick="startScan">
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="-14dp"
+        android:layout_marginEnd="19dp"
+        android:background="@drawable/custom_button"
+        android:onClick="startScan"
+        android:text="@string/button_scan" />
 
-    </Button>
-
-    <Button
-        android:id="@+id/stop_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/welcome_message"
-        android:layout_toEndOf="@id/scan_button"
-        android:text="@string/button_stop"
-        android:layout_marginTop="20dp"
-        android:onClick="stopScan">
-
-    </Button>
-
-
-    <EditText
-        android:id="@+id/editText"
+    <ListView
+        android:id="@+id/list_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_below="@id/scan_button"
-        android:layout_marginTop="28dp"
-        android:hint="enter adddress"
-        android:textSize="15sp">
-
-    </EditText>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/scan_button"
-        android:layout_marginStart="87dp"
-        android:layout_marginTop="28dp"
-        android:layout_alignRight="@id/editText"
-        android:onClick="connectToSelectedDevice"
-        android:text="Connect"/>
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="-4dp"
+        android:layout_marginTop="7dp"
+        android:layout_marginBottom="6dp"
+        android:background="@drawable/list_view_background"
+        android:drawSelectorOnTop="false" />
 
 
 </RelativeLayout>

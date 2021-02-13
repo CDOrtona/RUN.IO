@@ -5,12 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCallback;
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
-import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
@@ -23,11 +18,13 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.EditText;
 
+import android.widget.ListView;
 import android.widget.Toast;
 
-import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Cristian D'Ortona
@@ -45,30 +42,28 @@ public class MainActivity extends AppCompatActivity {
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothLeScanner bluetoothLeScanner;
     private boolean scanning = false;
-    DeviceScanned deviceScanned;
+
+    //new
+    DevicesScannedModel devicesScannedModel;
+    ArrayList<DevicesScannedModel> devicesScannedList;
 
     //this end the scan every 10 seconds
     //it's very important as in a LE application we want to reduce battery-intensive tasks
-    private static final long SCAN_PERIOD = 200000;
-
-    //GATT connection
-    BluetoothGatt gatt;
-    List<BluetoothGattService> gattServices;
-    BluetoothGattService gattMainService;
-    List<BluetoothGattCharacteristic> gattCharacteristics;
-    BluetoothGattCharacteristic gattCharacteristicTemp, gattCharacteristicHearth;
+    private static final long SCAN_PERIOD = 12000;
 
     //debug garbage
     EditText editText;
 
+    //ListView
+    CustomAdapterView customAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        //debug garbage
-        editText = findViewById(R.id.editText);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
 
         //initialize bluetooth adapter
         bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
@@ -76,11 +71,28 @@ public class MainActivity extends AppCompatActivity {
 
         //initialize scan variables
         bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
-        deviceScanned = new DeviceScanned();
+
+        //new
+        devicesScannedModel= new DevicesScannedModel();
+        devicesScannedList = new ArrayList<>();
 
 
         checkBleStatus();
         grantLocationPermissions();
+
+        //ListView
+        customAdapter = new CustomAdapterView(this, R.layout.adapter_view_layout, devicesScannedList);
+        ListView listView = findViewById(R.id.list_view);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                final Intent intent = new Intent(MainActivity.this, SensorsInfo.class);
+                intent.putExtra(StaticResources.ESP32_ADDRESS, devicesScannedList.get(position).getBleAddress());
+                startActivity(intent);
+
+            }
+        });
+        listView.setAdapter(customAdapter);
 
     }
 
@@ -161,10 +173,7 @@ public class MainActivity extends AppCompatActivity {
     public void startScan(View v){
         if(!scanning){
 
-            //this removes all the entries in the map from the previous scans if they occurred
-            deviceScanned.flush();
-
-            disconnectGattServer();
+            //disconnectGattServer();
 
             //the handler is used to schedule an event to happen at some point in the future
             //in this case the method postDelayed causes the runnable to be added to the message queue
@@ -176,7 +185,6 @@ public class MainActivity extends AppCompatActivity {
                     //this's going to stop the scan if the user doesn't stop it manually before SCAN_PERIOD
                     bluetoothLeScanner.stopScan(leScanCallBack);
                     Log.d("startScan","scanning has stopped after time elapsed");
-                    deviceScanned.flush();
                 }
             }, SCAN_PERIOD);
 
@@ -189,14 +197,14 @@ public class MainActivity extends AppCompatActivity {
 
     //this stops the scan before the time elapses
     // when the button is pressed
-    public void stopScan(View v){
+    /*public void stopScan(View v){
         if(scanning){
             bluetoothLeScanner.stopScan(leScanCallBack);
             Log.d("stopScan", "BLE scanner has been stopped");
             //the following code is debug garbage, it needs to be deleted
             deviceScanned.printDeviceInfo();
         }
-    }
+    }*/
 
     //callBack method used to catch the result of startScan()
     //this is an abstract class
@@ -208,7 +216,13 @@ public class MainActivity extends AppCompatActivity {
         //callBackType determines how this callback was triggered
         public void onScanResult(int callbackType, ScanResult result) {
             super.onScanResult(callbackType, result);
-            deviceScanned.add(result);
+            //deviceScanned.add(result);
+            BluetoothDevice device = result.getDevice();
+            devicesScannedModel.setAddress(device.getAddress());
+            devicesScannedModel.setDeviceName(device.getName());
+            devicesScannedModel.setBondState(device.getBondState());
+            devicesScannedModel.setRssi(result.getRssi());
+            customAdapter.add(devicesScannedModel);
         }
 
         public void onScanFailed(int errorCode) {
@@ -217,7 +231,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     //this method will create a new connection with the GATT server of the BLE device specified
-    public void connectToSelectedDevice(View v){
+    /*public void connectToSelectedDevice(View v){
         //hard coded
         Toast.makeText(this, "Connecting...", Toast.LENGTH_SHORT).show();
         //getBleDevice() is used to return the Device whose key is the address inserted
@@ -231,129 +245,10 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "incorrect address, device not found!", Toast.LENGTH_LONG).show();
             Log.w("connectToSelectedDevice", "input address doesn't match any key in the map");
         }
-    }
+    }/*
 
-    //this is an abstract method which handles back the results from connecting to the specified Gatt Server
-    BluetoothGattCallback gattCallBack = new BluetoothGattCallback() {
-        @Override
-        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            super.onConnectionStateChange(gatt, status, newState);
 
-            /*if (status == BluetoothGatt.GATT_FAILURE) {
-                disconnectGattServer();
-                return;
-            } else if (status != BluetoothGatt.GATT_SUCCESS) {
-                // handle anything not SUCCESS as failure
-                disconnectGattServer();
-                return;
-            }*/
 
-            if (newState == BluetoothProfile.STATE_CONNECTED) {
-                //Toast.makeText(getBaseContext(), "Device Connected", Toast.LENGTH_SHORT).show();
-                Log.d("onConnectionStateChange", "connected to Bluetooth successfully");
-                discoverServicesDelay(gatt);
-                Log.d("onConnectionStateChange", "discoverServices started for results");
-            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                //Toast.makeText(getBaseContext(), "Device Disconnected", Toast.LENGTH_SHORT).show();
-                Log.d("onConnectionStateChange", "disconnecting GATT server");
-                disconnectGattServer();
-            } else if(newState == BluetoothProfile.STATE_CONNECTING){
-                //Toast.makeText(getBaseContext(), "Connecting...", Toast.LENGTH_SHORT).show();
-                Log.d("onConnectionStateChange", "Connecting...");
-            }
-        }
-
-        @Override
-        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-            super.onServicesDiscovered(gatt, status);
-            if(status == BluetoothGatt.GATT_SUCCESS){
-                Log.d("onServicesDiscovered", "remote device has been explored successfully for services");
-                //this is a list of all the services found
-                gattServices = gatt.getServices();
-                //method invoked to check if the ESP32 ATT service specified as a static constant actually exists
-                gattMainService = checkServiceExists(gattServices);
-                if(gattMainService != null){
-                    //since the ESP32 service exists, I'm saving all its characteristics in the list
-                    gattCharacteristics = gattMainService.getCharacteristics();
-                    //method invoked in order to gain the characteristics needed and assign them to the correct variables
-                    assignCharacteristics(gattCharacteristics);
-                } else {
-                    Log.e("onServicesDiscovered", "no service matches with the predefined one");
-                    //Toast.makeText(getBaseContext(), "No service found matches the predefined one", Toast.LENGTH_SHORT).show();
-                }
-            }
-            else if(status == BluetoothGatt.GATT_FAILURE){
-                Log.e("onServicesDiscovered", "remote device hasn't been explored successfully for services");
-                //Toast.makeText(getBaseContext(), "There has been a problem with the services discovery of the remote device", Toast.LENGTH_LONG).show();
-            }
-        }
-
-        @Override
-        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            super.onCharacteristicRead(gatt, characteristic, status);
-        }
-
-        @Override
-        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            super.onCharacteristicChanged(gatt, characteristic);
-        }
-    };
-
-    //background process which is going to cause the current thread to sleep for the specified time
-    //it's used to avoid problems during connection
-    private void discoverServicesDelay(BluetoothGatt gatt) {
-        try {
-            Thread.sleep(600);
-            Log.d("discoverServicesDelay", "delay before discovering services...");
-            gatt.discoverServices();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            Toast.makeText(this, "Could not find BLE services.", Toast.LENGTH_SHORT).show();
-
-        }
-    }
-
-    //this method checks if the service exists and return it if it does exist
-    private BluetoothGattService checkServiceExists(List<BluetoothGattService> foundServices){
-        for(int i=0; i<foundServices.size(); i++){
-            if(foundServices.get(i).getUuid().toString().equals(StaticResources.ESP32_SERVICE)) {
-                gattMainService = foundServices.get(i);
-                //Toast.makeText(getBaseContext(), "Service found", Toast.LENGTH_SHORT).show();
-                Log.d("checkServiceExists", "Service has been found, " + "UUID: " + foundServices.get(i).getUuid());
-                return gattMainService;
-            }
-        }
-        return null;
-    }
-
-    //this method is used to find the predefined characteristics and then assign them to their BluetoothGattCharacteristic object
-    private void assignCharacteristics(List<BluetoothGattCharacteristic> foundCharacteristics){
-        for(int i=0; i<foundCharacteristics.size(); i++){
-            switch(foundCharacteristics.get(i).getUuid().toString()) {
-                case StaticResources.ESP32_TEMP_CHARACTERISTIC:
-                    gattCharacteristicTemp = foundCharacteristics.get(i);
-                    Log.e("assignCharacteristics" , "charactersitic has been assigned correctly, " +
-                            + '\n' + "UUID: " + foundCharacteristics.get(i).getUuid());
-                    break;
-                case StaticResources.ESP32_HEARTH_CHARACTERISTIC:
-                    gattCharacteristicHearth = foundCharacteristics.get(i);
-                    Log.e("assignCharacteristics" , "charactersitic has been assigned correctly, " +
-                            + '\n' + "UUID: " + foundCharacteristics.get(i).getUuid());
-                    break;
-                default:
-                    //this happens when there is a characteristic in the service that isn't part of the predefined ones
-                    Log.e("assignCharacteristics", "Characteristic not listed in the predefined ones"
-                            + '\n' + "UUID: " + foundCharacteristics.get(i).getUuid());
-            }
-        }
-    }
-
-    private void disconnectGattServer(){
-        if(gatt != null){
-            gatt.disconnect();
-            gatt.close();
-        }
-    }
 
 
 
@@ -387,34 +282,4 @@ public class MainActivity extends AppCompatActivity {
 
     }*/
 
-
-
-
-
-
 }
-
-
-/*comments
- *readCharacteristic(BluetoothGattCharacteristic characteristic)  result is caught by onCharacteristicRead() that is part of the abstract class BluetoothGattCallback https://developer.android.com/reference/android/bluetooth/BluetoothGatt#readCharacteristic(android.bluetooth.BluetoothGattCharacteristic)
- *
- * onCharacteristicChanged (BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) this notifies a characteristic has changed
- *
- * onCharacteristicChanged (BluetoothGatt gatt,BluetoothGattCharacteristic characteristic)
-
-       private final BluetoothGattCallback btleGattCallback = new BluetoothGattCallback() {
-           @override
-           onCharacteristicChanged (BluetoothGatt gatt,BluetoothGattCharacteristic characteristic){
-
-               gatt.readCharacteristic(characteristic)
-            }
-           @override
-           onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic){
-              string temperature = characteristic;
-           }
-        }
-        *
-        *
-
-
- */
