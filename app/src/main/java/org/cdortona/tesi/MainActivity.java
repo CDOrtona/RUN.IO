@@ -19,7 +19,6 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.EditText;
 
 import android.widget.ListView;
 import android.widget.Toast;
@@ -42,17 +41,11 @@ public class MainActivity extends AppCompatActivity {
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothLeScanner bluetoothLeScanner;
     private boolean scanning = false;
-
-    //new
-    DevicesScannedModel devicesScannedModel;
     ArrayList<DevicesScannedModel> devicesScannedList;
 
     //this end the scan every 10 seconds
     //it's very important as in a LE application we want to reduce battery-intensive tasks
-    private static final long SCAN_PERIOD = 12000;
-
-    //debug garbage
-    EditText editText;
+    private static final long SCAN_PERIOD = 10000;
 
     //ListView
     CustomAdapterView customAdapter;
@@ -71,21 +64,17 @@ public class MainActivity extends AppCompatActivity {
 
         //initialize scan variables
         bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
-
-        //new
-        devicesScannedModel= new DevicesScannedModel();
         devicesScannedList = new ArrayList<>();
-
 
         checkBleStatus();
         grantLocationPermissions();
 
-        //ListView
+        //ListView used to print on screen a list of all the scanned devices
         customAdapter = new CustomAdapterView(this, R.layout.adapter_view_layout, devicesScannedList);
         ListView listView = findViewById(R.id.list_view);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                 final Intent intent = new Intent(MainActivity.this, SensorsInfo.class);
                 intent.putExtra(StaticResources.ESP32_ADDRESS, devicesScannedList.get(position).getBleAddress());
                 startActivity(intent);
@@ -93,7 +82,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         listView.setAdapter(customAdapter);
-
     }
 
     @Override
@@ -171,7 +159,10 @@ public class MainActivity extends AppCompatActivity {
 
     //this starts the scan of the BLE advertiser nearby
     public void startScan(View v){
-        if(!scanning){
+        if(!scanning) {
+
+            //this is used to flush the entries in the viewList whenever a new scan occurs
+            customAdapter.clear();
 
             //disconnectGattServer();
 
@@ -184,14 +175,16 @@ public class MainActivity extends AppCompatActivity {
                     scanning = false;
                     //this's going to stop the scan if the user doesn't stop it manually before SCAN_PERIOD
                     bluetoothLeScanner.stopScan(leScanCallBack);
-                    Log.d("startScan","scanning has stopped after time elapsed");
+                    Log.d("startScan", "scanning has stopped after time elapsed");
                 }
             }, SCAN_PERIOD);
-
             scanning = true;
             //this is executed during the x time before the thread is activated
             bluetoothLeScanner.startScan(leScanCallBack);
             Log.d("startScan", "scan has started");
+        } else if(scanning){
+            bluetoothLeScanner.stopScan(leScanCallBack);
+            scanning=false;
         }
     }
 
@@ -208,7 +201,7 @@ public class MainActivity extends AppCompatActivity {
 
     //callBack method used to catch the result of startScan()
     //this is an abstract class
-    private ScanCallback leScanCallBack = new ScanCallback() {
+    ScanCallback leScanCallBack = new ScanCallback() {
         @Override
         //ScanResult is the result of the BLE scan
         //its method getDevice() permits to retrieve a BluetoothDevice object
@@ -216,15 +209,10 @@ public class MainActivity extends AppCompatActivity {
         //callBackType determines how this callback was triggered
         public void onScanResult(int callbackType, ScanResult result) {
             super.onScanResult(callbackType, result);
-            //deviceScanned.add(result);
             BluetoothDevice device = result.getDevice();
-            devicesScannedModel.setAddress(device.getAddress());
-            devicesScannedModel.setDeviceName(device.getName());
-            devicesScannedModel.setBondState(device.getBondState());
-            devicesScannedModel.setRssi(result.getRssi());
-            customAdapter.add(devicesScannedModel);
+            customAdapter.add(new DevicesScannedModel(device.getName(), device.getAddress(), result.getRssi(), device.getBondState()));
+            customAdapter.notifyDataSetChanged();
         }
-
         public void onScanFailed(int errorCode) {
             Log.e("leScanCallBack" ,"scan call back has failed with errorCode: " + errorCode);
         }

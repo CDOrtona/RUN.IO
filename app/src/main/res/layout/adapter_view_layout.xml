@@ -19,7 +19,8 @@
             android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
             android:paddingStart="?android:attr/listPreferredItemPaddingStart"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textColor="@color/text"/>
+            android:textColor="@color/text"
+            android:textSize="20sp"/>
 
         <TextView xmlns:android="http://schemas.android.com/apk/res/android"
             android:text="RSSI: "
@@ -40,7 +41,8 @@
             android:minHeight="?android:attr/listPreferredItemHeightSmall"
             android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textColor="@color/text"/>
+            android:textColor="@color/text"
+            android:textSize="20sp"/>
 
 
 
@@ -55,6 +57,7 @@
         android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
         android:paddingStart="?android:attr/listPreferredItemPaddingStart"
         android:textAppearance="?android:attr/textAppearanceSearchResultTitle"
-        android:textColor="@color/text"/>
+        android:textColor="@color/text"
+        android:textSize="12sp"/>
 
 </LinearLayout>

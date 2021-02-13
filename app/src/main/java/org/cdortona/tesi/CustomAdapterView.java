@@ -14,12 +14,13 @@ import java.util.ArrayList;
 
 public class CustomAdapterView extends ArrayAdapter<DevicesScannedModel>{
 
-    private Context mContext;
-    //private ArrayList<DevicesScannedModel> mList;
+     Context mContext;
+     ArrayList<DevicesScannedModel> deviceList;
 
-     CustomAdapterView(@NonNull Context context, int resource, @NonNull ArrayList<DevicesScannedModel> objects) {
-        super(context, resource, objects);
+     CustomAdapterView(@NonNull Context context, int resource, @NonNull ArrayList<DevicesScannedModel> object) {
+        super(context, resource, object);
         mContext = context;
+        deviceList = object;
     }
 
     @NonNull
@@ -40,5 +41,10 @@ public class CustomAdapterView extends ArrayAdapter<DevicesScannedModel>{
         return customView;
     }
 
+    @Nullable
+    @Override
+    public DevicesScannedModel getItem(int position) {
+        return deviceList.get(position);
+    }
 }
 

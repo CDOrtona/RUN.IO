@@ -3,17 +3,25 @@ package org.cdortona.tesi;
 public class DevicesScannedModel {
 
     private String deviceName;
-    private String alias;
     private String address;
     private int bondState;
     private int rssi;
 
-    String getDeviceName(){
-        return this.deviceName;
+    //constructor
+    DevicesScannedModel(String deviceName, String address, int rssi, int bondState) {
+        if(deviceName == null){
+            this.deviceName = "Unknown";
+        }
+        else{
+            this.deviceName = deviceName;
+        }
+        this.address = address;
+        this.rssi = rssi;
+        this.bondState = bondState;
     }
 
-    String getAlias(){
-        return this.alias;
+    String getDeviceName(){
+        return this.deviceName;
     }
 
     String getBleAddress(){
@@ -30,15 +38,11 @@ public class DevicesScannedModel {
 
     void setDeviceName(String deviceName){
         if(deviceName == null){
-            this.deviceName = "no name";
+            this.deviceName = "Unknown";
         }
         else{
             this.deviceName = deviceName;
         }
-    }
-
-    void setAlias(String alias){
-        this.alias = alias;
     }
 
     void setAddress(String address){
@@ -56,7 +60,6 @@ public class DevicesScannedModel {
     public String toString(){
         return  '\n' + "Address: " + this.getBleAddress() + '\n'
                 + "Device name: " + this.getDeviceName() + '\n'
-                + "Alias: " + this.getAlias() + '\n'
                 + "Bound State: " + this.getBondState() + '\n'
                 + "Rssi: " + this.getRssi();
     }
