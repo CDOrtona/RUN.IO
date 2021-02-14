@@ -18,7 +18,6 @@ import java.util.UUID;
 class ConnectToGattServer {
 
     private Context mContext;
-    private final String TAG = "ConnectToGattServer";
 
     private BluetoothAdapter bluetoothAdapter;
 
@@ -30,7 +29,7 @@ class ConnectToGattServer {
     private BluetoothGattCharacteristic gattCharacteristicHearth;
     private List<BluetoothGattCharacteristic> gattCharacteristicsList;
 
-    //Initializing dependencies needed for the connection to the GATT server of the remote device(ESP32)
+    //Constructor which initializes the dependencies needed for the connection to the GATT server of the remote device(ESP32)
     ConnectToGattServer(String deviceAddress, Context context){
         mContext = context;
         final BluetoothManager bluetoothManager =(BluetoothManager) context.getSystemService(context.BLUETOOTH_SERVICE);
@@ -44,12 +43,12 @@ class ConnectToGattServer {
         //the try catch blocks is used in order to check if there is a device with that address
         try {
             BluetoothDevice bleAdvertiser = bluetoothAdapter.getRemoteDevice(deviceAddress);
-            Log.d(TAG, "found device with the following MAC address: " + deviceAddress);
+            Log.d("connectToGatt", "found device with the following MAC address: " + deviceAddress);
             //this method is gonna connect to the remote GATT server and the result will be handled by the callBack method
             gatt = bleAdvertiser.connectGatt(mContext, true, gattCallBack);
         } catch(IllegalArgumentException e){
             e.getStackTrace();
-            Log.e(TAG, "the address is not associated to any BLE advertiser nearby");
+            Log.e("connectToGatt", "the address is not associated to any BLE advertiser nearby");
             Toast.makeText(mContext, "Error, address doesn't match any BLE advertiser nearby", Toast.LENGTH_LONG).show();
         }
     }
@@ -88,11 +87,13 @@ class ConnectToGattServer {
             gattService = gatt.getService(UUID.fromString(StaticResources.ESP32_SERVICE));
             gattCharacteristicsList = gattService.getCharacteristics();
             assignCharacteristics(gattCharacteristicsList);
-
+            //this is an asynchronous operation and the result is reported by the callBack method onCharacteristicRead
+            Log.d("onServiceDiscovered", "started characteristic reading...");
+            gatt.readCharacteristic(gattCharacteristicTemp);
 
             //make this a logCat that prints all the info about discovered services and characteristics
             for(int i=1; i<gattServicesList.size(); i++){
-                System.out.println("I'm printing the list of the services:" + gattServicesList.get(i).getUuid().toString() + '\n');
+                Log.i("onServicesDiscovered", "I'm printing the list of the services:" + gattServicesList.get(i).getUuid().toString() + '\n');
             }
 
         }
@@ -100,6 +101,10 @@ class ConnectToGattServer {
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicRead(gatt, characteristic, status);
+            byte[] rawData = gattCharacteristicTemp.getValue();
+            String message = new String(rawData);
+            System.out.println("message from the characteristic is: " + message);
+            writeToSensor(message);
         }
 
         @Override
@@ -140,7 +145,18 @@ class ConnectToGattServer {
                     //this happens when there is a characteristic in the service that isn't part of the predefined ones
                     Log.d("assignCharacteristics", "Characteristic not listed in the predefined ones"
                             + '\n' + "UUID: " + foundCharacteristics.get(i).getUuid());
+                    break;
             }
+        }
+    }
+
+    void writeToSensor(String messageToWrite){
+        try{
+            Thread.sleep(600);
+            SensorsInfo sensorsInfo = new SensorsInfo();
+            sensorsInfo.readFromCharacteristic(messageToWrite);
+        } catch (InterruptedException e){
+            e.printStackTrace();
         }
     }
 }

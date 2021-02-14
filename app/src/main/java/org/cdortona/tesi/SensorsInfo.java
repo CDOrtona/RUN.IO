@@ -15,6 +15,11 @@ public class SensorsInfo extends AppCompatActivity {
     String deviceAddress;
     String deviceName;
 
+    //TextView objects
+    TextView addressInfo;
+    TextView nameInfo;
+    TextView tempValue;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -24,16 +29,16 @@ public class SensorsInfo extends AppCompatActivity {
         }
 
         //UI setup
-        TextView addressInfo = findViewById(R.id.address_textView);
-        TextView nameInfo = findViewById(R.id.name_textView);
-        TextView tempValue = findViewById(R.id.temp_textView);
+        addressInfo = findViewById(R.id.address_textView);
+        nameInfo = findViewById(R.id.name_textView);
+        tempValue = findViewById(R.id.temp_textView);
 
         //I have to retrieve the info from the Intent which called this activity
         Intent receivedIntent = getIntent();
         deviceAddress = receivedIntent.getStringExtra("address");
         deviceName = receivedIntent.getStringExtra("name");
 
-        //Setting values of the TextViews objects
+        //Setting the values of the TextViews objects
         addressInfo.setText(deviceAddress);
         nameInfo.setText(deviceName);
 
@@ -53,6 +58,10 @@ public class SensorsInfo extends AppCompatActivity {
 
     public void disconnectFromGatt(View v){
         connectToGattServer.disconnectGattServer();
+    }
+
+    void readFromCharacteristic(String readString){
+        tempValue.setText(readString);
     }
 
     //A bunch of methods which need to be removed
