@@ -2,25 +2,18 @@ package org.cdortona.tesi;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCallback;
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattService;
-import android.bluetooth.BluetoothProfile;
+import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
-import android.widget.Toast;
-
-import java.util.List;
+import android.view.View;
+import android.widget.TextView;
 
 public class SensorsInfo extends AppCompatActivity {
 
-    //GATT connection
-    BluetoothGatt gatt;
-    List<BluetoothGattService> gattServices;
-    BluetoothGattService gattMainService;
-    List<BluetoothGattCharacteristic> gattCharacteristics;
-    BluetoothGattCharacteristic gattCharacteristicTemp, gattCharacteristicHearth;
+    //I initialize an object from the class ConnectToGattServer which handles the connection to the GATT server of the ESP32
+    ConnectToGattServer connectToGattServer;
+
+    String deviceAddress;
+    String deviceName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,11 +23,42 @@ public class SensorsInfo extends AppCompatActivity {
             getSupportActionBar().hide();
         }
 
+        //UI setup
+        TextView addressInfo = findViewById(R.id.address_textView);
+        TextView nameInfo = findViewById(R.id.name_textView);
+        TextView tempValue = findViewById(R.id.temp_textView);
+
+        //I have to retrieve the info from the Intent which called this activity
+        Intent receivedIntent = getIntent();
+        deviceAddress = receivedIntent.getStringExtra("address");
+        deviceName = receivedIntent.getStringExtra("name");
+
+        //Setting values of the TextViews objects
+        addressInfo.setText(deviceAddress);
+        nameInfo.setText(deviceName);
+
+        //calling the constructor in order to build a BluetoothAdaptor object
+        connectToGattServer = new ConnectToGattServer(deviceAddress, this);
+
     }
 
+    public void connectToGatt(View v){
+        try{
+            connectToGattServer.connectToGatt(deviceAddress);
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
+    public void disconnectFromGatt(View v){
+        connectToGattServer.disconnectGattServer();
+    }
+
+    //A bunch of methods which need to be removed
 
     //this is an abstract method which handles back the results from connecting to the specified Gatt Server
-    BluetoothGattCallback gattCallBack = new BluetoothGattCallback() {
+    /*BluetoothGattCallback gattCallBack = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             super.onConnectionStateChange(gatt, status, newState);
@@ -46,7 +70,7 @@ public class SensorsInfo extends AppCompatActivity {
                 // handle anything not SUCCESS as failure
                 disconnectGattServer();
                 return;
-            }*/
+            }
 
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 //Toast.makeText(getBaseContext(), "Device Connected", Toast.LENGTH_SHORT).show();
@@ -153,5 +177,5 @@ public class SensorsInfo extends AppCompatActivity {
             gatt.disconnect();
             gatt.close();
         }
-    }
+    }*/
 }

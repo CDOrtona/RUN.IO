@@ -72,11 +72,13 @@ public class MainActivity extends AppCompatActivity {
         //ListView used to print on screen a list of all the scanned devices
         customAdapter = new CustomAdapterView(this, R.layout.adapter_view_layout, devicesScannedList);
         ListView listView = findViewById(R.id.list_view);
+        //this is what happens whenever an item of the ListView is pressed
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                 final Intent intent = new Intent(MainActivity.this, SensorsInfo.class);
-                intent.putExtra(StaticResources.ESP32_ADDRESS, devicesScannedList.get(position).getBleAddress());
+                intent.putExtra("address", devicesScannedList.get(position).getBleAddress());
+                intent.putExtra("name", devicesScannedList.get(position).getDeviceName());
                 startActivity(intent);
 
             }
@@ -182,9 +184,6 @@ public class MainActivity extends AppCompatActivity {
             //this is executed during the x time before the thread is activated
             bluetoothLeScanner.startScan(leScanCallBack);
             Log.d("startScan", "scan has started");
-        } else if(scanning){
-            bluetoothLeScanner.stopScan(leScanCallBack);
-            scanning=false;
         }
     }
 
@@ -217,27 +216,6 @@ public class MainActivity extends AppCompatActivity {
             Log.e("leScanCallBack" ,"scan call back has failed with errorCode: " + errorCode);
         }
     };
-
-    //this method will create a new connection with the GATT server of the BLE device specified
-    /*public void connectToSelectedDevice(View v){
-        //hard coded
-        Toast.makeText(this, "Connecting...", Toast.LENGTH_SHORT).show();
-        //getBleDevice() is used to return the Device whose key is the address inserted
-        BluetoothDevice selectedBleDevice = deviceScanned.getBleDevice(editText.getText().toString());
-        if(selectedBleDevice != null) {
-            gatt = selectedBleDevice.connectGatt(getBaseContext(), true, gattCallBack);
-            //Log.d("connectToSelectedDevice", "connecting...");
-        }
-        else {
-            //hard coded
-            Toast.makeText(this, "incorrect address, device not found!", Toast.LENGTH_LONG).show();
-            Log.w("connectToSelectedDevice", "input address doesn't match any key in the map");
-        }
-    }/*
-
-
-
-
 
 
     //debug garbage

@@ -13,10 +13,11 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginStart="148dp"
-        android:layout_marginTop="38dp"
+        android:layout_marginStart="225dp"
+        android:layout_marginTop="24dp"
         android:background="@drawable/custom_button"
-        android:text="@string/button_connect_gatt" />
+        android:text="@string/button_connect_gatt"
+        android:onClick="connectToGatt"/>
 
     <Button
         android:id="@+id/button_disconnect"
@@ -24,29 +25,39 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginTop="37dp"
-        android:layout_marginEnd="10dp"
+        android:layout_marginTop="77dp"
+        android:layout_marginEnd="47dp"
         android:background="@drawable/custom_button"
-        android:text="Disconnect" />
+        android:text="@string/disconnect_gatt"
+        android:onClick="disconnectFromGatt"/>
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/address_textView"
         android:layout_width="89dp"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_marginStart="28dp"
-        android:layout_marginTop="35dp"
+        android:layout_marginStart="70dp"
+        android:layout_marginTop="81dp"
         android:textColor="@color/text" />
 
     <TextView
-        android:id="@+id/textView3"
+        android:id="@+id/name_textView"
         android:layout_width="89dp"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginStart="29dp"
-        android:layout_marginBottom="554dp"
-        android:textColor="@color/text"/>
+        android:layout_marginStart="70dp"
+        android:layout_marginBottom="580dp"
+        android:textColor="@color/text" />
+
+    <TextView
+        android:id="@+id/temp_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="89dp"
+        android:layout_marginTop="202dp" />
 
 </RelativeLayout>
