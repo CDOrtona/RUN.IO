@@ -1,5 +1,12 @@
 package org.cdortona.tesi;
 
+/**
+ * Cristian D'Ortona
+ *
+ * TESI DI LAUREA IN INGEGNERIA ELETTRONICA E DELLE TELECOMUNICAZIONI
+ *
+ */
+
 class StaticResources {
 
     private static final String PACKAGE_NAME = "com.cdortona.tesi";
@@ -11,7 +18,20 @@ class StaticResources {
     static final String ESP32_DESCRIPTOR = "00002902-0000-1000-8000-00805f9b34fb";
     static final String ESP32_HEARTH_CHARACTERISTIC = "dummy-value";
 
+    //Broadcaster Intent Filters
+    static final String BROADCAST_CONNECTION_STATE = PACKAGE_NAME + ".connectionState";
+    static final String BROADCAST_ESP32_INFO =  PACKAGE_NAME + ".serviceFound";
+    static final String BROADCAST_CHARACTERISTIC_CHANGED = PACKAGE_NAME + ".characteristicChanged";
+    static final String BROADCAST_CHARACTERISTIC_READ = PACKAGE_NAME + ".characteristicRead";
 
+    //Keys for the putExtra method
+    static final String EXTRA_STATE_CONNECTION = "keyConnection";
+    static final String EXTRA_TEMP_VALUE = "tempValue";
+    static final String EXTRA_HEART_VALUE = "heartValue";
+
+    //values for the putExtra method
+    static final String STATE_CONNECTED = "connected";
+    static final String STATE_DISCONNECTED = "disconnected";
 
 
 }

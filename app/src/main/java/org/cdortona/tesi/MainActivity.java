@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
     //this end the scan every 10 seconds
     //it's very important as in a LE application we want to reduce battery-intensive tasks
-    private static final long SCAN_PERIOD = 10000;
+    private static final long SCAN_PERIOD = 8000;
 
     //ListView
     CustomAdapterView customAdapter;
@@ -163,6 +163,8 @@ public class MainActivity extends AppCompatActivity {
     public void startScan(View v){
         if(!scanning) {
 
+            Toast.makeText(this, "Scanning for nearby devices", Toast.LENGTH_SHORT ).show();
+
             //this is used to flush the entries in the viewList whenever a new scan occurs
             customAdapter.clear();
 
@@ -213,6 +215,7 @@ public class MainActivity extends AppCompatActivity {
             customAdapter.notifyDataSetChanged();
         }
         public void onScanFailed(int errorCode) {
+            Toast.makeText(getBaseContext(), "scan has failed, please retry again", Toast.LENGTH_SHORT).show();
             Log.e("leScanCallBack" ,"scan call back has failed with errorCode: " + errorCode);
         }
     };

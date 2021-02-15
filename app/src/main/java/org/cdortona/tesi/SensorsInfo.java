@@ -2,10 +2,23 @@ package org.cdortona.tesi;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+
+/**
+ * Cristian D'Ortona
+ *
+ * TESI DI LAUREA IN INGEGNERIA ELETTRONICA E DELLE TELECOMUNICAZIONI
+ *
+ */
+
 
 public class SensorsInfo extends AppCompatActivity {
 
@@ -14,11 +27,14 @@ public class SensorsInfo extends AppCompatActivity {
 
     String deviceAddress;
     String deviceName;
+    boolean connectedToGatt = false;
 
     //TextView objects
     TextView addressInfo;
     TextView nameInfo;
     TextView tempValue;
+    TextView connectionInfo;
+    TextView connectionState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +48,8 @@ public class SensorsInfo extends AppCompatActivity {
         addressInfo = findViewById(R.id.address_textView);
         nameInfo = findViewById(R.id.name_textView);
         tempValue = findViewById(R.id.temp_textView);
+        connectionInfo = findViewById(R.id.info_textView);
+        connectionState = findViewById(R.id.connection_state_textView);
 
         //I have to retrieve the info from the Intent which called this activity
         Intent receivedIntent = getIntent();
@@ -41,150 +59,72 @@ public class SensorsInfo extends AppCompatActivity {
         //Setting the values of the TextViews objects
         addressInfo.setText(deviceAddress);
         nameInfo.setText(deviceName);
+        //hard coded, I must change it later
+        connectionState.setTextColor(Color.RED);
+        connectionState.setText("Disconnected");
 
         //calling the constructor in order to build a BluetoothAdaptor object
         connectToGattServer = new ConnectToGattServer(deviceAddress, this);
 
-    }
-
-    public void connectToGatt(View v){
-        try{
-            connectToGattServer.connectToGatt(deviceAddress);
-        } catch(Exception e){
-            e.printStackTrace();
-        }
+        //here I'm specifying the intent filters I want to subscribe to in order to get their updates
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(StaticResources.BROADCAST_CONNECTION_STATE);
+        intentFilter.addAction(StaticResources.BROADCAST_CHARACTERISTIC_CHANGED);
+        intentFilter.addAction(StaticResources.BROADCAST_CHARACTERISTIC_READ);
+        registerReceiver(bleBroadcastReceiver, intentFilter);
 
     }
 
-    public void disconnectFromGatt(View v){
-        connectToGattServer.disconnectGattServer();
-    }
-
-    void readFromCharacteristic(String readString){
-        tempValue.setText(readString);
-    }
-
-    //A bunch of methods which need to be removed
-
-    //this is an abstract method which handles back the results from connecting to the specified Gatt Server
-    /*BluetoothGattCallback gattCallBack = new BluetoothGattCallback() {
+    //this is used to receive the broadcast announcements that are being sent from the class ConnectToGattServer()
+    //the received broadcasters depend on the intent filters declared above
+    final BroadcastReceiver bleBroadcastReceiver = new BroadcastReceiver() {
         @Override
-        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            super.onConnectionStateChange(gatt, status, newState);
+        public void onReceive(Context context, Intent intent) {
+            final String broadcastReceived = intent.getAction();
+            Log.d("bleBroadCastReceiver", "The received Broadcast is: " + broadcastReceived);
 
-            /*if (status == BluetoothGatt.GATT_FAILURE) {
-                disconnectGattServer();
-                return;
-            } else if (status != BluetoothGatt.GATT_SUCCESS) {
-                // handle anything not SUCCESS as failure
-                disconnectGattServer();
-                return;
+            switch (broadcastReceived) {
+
+                case StaticResources.BROADCAST_CONNECTION_STATE:
+                    if(intent.getStringExtra(StaticResources.EXTRA_STATE_CONNECTION).equals(StaticResources.STATE_CONNECTED)) {
+                        connectedToGatt = true;
+                        connectionState.setTextColor(Color.GREEN);
+                        connectionState.setText(intent.getStringExtra(StaticResources.EXTRA_STATE_CONNECTION));
+                    }
+                    else if(intent.getStringExtra(StaticResources.EXTRA_STATE_CONNECTION).equals(StaticResources.STATE_DISCONNECTED)){
+                        connectedToGatt = false;
+                        connectionState.setTextColor(Color.RED);
+                        connectionState.setText(intent.getStringExtra(StaticResources.EXTRA_STATE_CONNECTION));
+                    }
+                        break;
+                case StaticResources.BROADCAST_CHARACTERISTIC_READ:
+                    if(connectedToGatt = true){
+                        String temp_value = intent.getStringExtra(StaticResources.EXTRA_TEMP_VALUE);
+                        tempValue.setText(temp_value);
+                    } else {
+                        //hard coded
+                        tempValue.setText("No data available");
+                    }
+                    break;
             }
-
-            if (newState == BluetoothProfile.STATE_CONNECTED) {
-                //Toast.makeText(getBaseContext(), "Device Connected", Toast.LENGTH_SHORT).show();
-                Log.d("onConnectionStateChange", "connected to Bluetooth successfully");
-                discoverServicesDelay(gatt);
-                Log.d("onConnectionStateChange", "discoverServices started for results");
-            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                //Toast.makeText(getBaseContext(), "Device Disconnected", Toast.LENGTH_SHORT).show();
-                Log.d("onConnectionStateChange", "disconnecting GATT server");
-                disconnectGattServer();
-            } else if(newState == BluetoothProfile.STATE_CONNECTING){
-                //Toast.makeText(getBaseContext(), "Connecting...", Toast.LENGTH_SHORT).show();
-                Log.d("onConnectionStateChange", "Connecting...");
-            }
-        }
-
-        @Override
-        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-            super.onServicesDiscovered(gatt, status);
-            if(status == BluetoothGatt.GATT_SUCCESS){
-                Log.d("onServicesDiscovered", "remote device has been explored successfully for services");
-                //this is a list of all the services found
-                gattServices = gatt.getServices();
-                //method invoked to check if the ESP32 ATT service specified as a static constant actually exists
-                gattMainService = checkServiceExists(gattServices);
-                if(gattMainService != null){
-                    //since the ESP32 service exists, I'm saving all its characteristics in the list
-                    gattCharacteristics = gattMainService.getCharacteristics();
-                    //method invoked in order to gain the characteristics needed and assign them to the correct variables
-                    assignCharacteristics(gattCharacteristics);
-                } else {
-                    Log.e("onServicesDiscovered", "no service matches with the predefined one");
-                    //Toast.makeText(getBaseContext(), "No service found matches the predefined one", Toast.LENGTH_SHORT).show();
-                }
-            }
-            else if(status == BluetoothGatt.GATT_FAILURE){
-                Log.e("onServicesDiscovered", "remote device hasn't been explored successfully for services");
-                //Toast.makeText(getBaseContext(), "There has been a problem with the services discovery of the remote device", Toast.LENGTH_LONG).show();
-            }
-        }
-
-        @Override
-        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            super.onCharacteristicRead(gatt, characteristic, status);
-        }
-
-        @Override
-        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            super.onCharacteristicChanged(gatt, characteristic);
         }
     };
 
-    //background process which is going to cause the current thread to sleep for the specified time
-    //it's used to avoid problems during connection
-    private void discoverServicesDelay(BluetoothGatt gatt) {
+    public void connectToGatt(View v) {
         try {
-            Thread.sleep(600);
-            Log.d("discoverServicesDelay", "delay before discovering services...");
-            gatt.discoverServices();
-        } catch (InterruptedException e) {
+            connectToGattServer.connectToGatt(deviceAddress);
+            //hard coded
+            connectionState.setTextColor(Color.YELLOW);
+            connectionState.setText("Connecting...");
+        } catch (Exception e) {
             e.printStackTrace();
-            Toast.makeText(this, "Could not find BLE services.", Toast.LENGTH_SHORT).show();
-
         }
     }
 
-    //this method checks if the service exists and return it if it does exist
-    private BluetoothGattService checkServiceExists(List<BluetoothGattService> foundServices){
-        for(int i=0; i<foundServices.size(); i++){
-            if(foundServices.get(i).getUuid().toString().equals(StaticResources.ESP32_SERVICE)) {
-                gattMainService = foundServices.get(i);
-                //Toast.makeText(getBaseContext(), "Service found", Toast.LENGTH_SHORT).show();
-                Log.d("checkServiceExists", "Service has been found, " + "UUID: " + foundServices.get(i).getUuid());
-                return gattMainService;
-            }
-        }
-        return null;
+    public void disconnectFromGatt(View v) {
+        connectToGattServer.disconnectGattServer();
+        connectedToGatt = false;
+        connectionState.setTextColor(Color.RED);
+        connectionState.setText("Disconnected");
     }
-
-    //this method is used to find the predefined characteristics and then assign them to their BluetoothGattCharacteristic object
-    private void assignCharacteristics(List<BluetoothGattCharacteristic> foundCharacteristics){
-        for(int i=0; i<foundCharacteristics.size(); i++){
-            switch(foundCharacteristics.get(i).getUuid().toString()) {
-                case StaticResources.ESP32_TEMP_CHARACTERISTIC:
-                    gattCharacteristicTemp = foundCharacteristics.get(i);
-                    Log.e("assignCharacteristics" , "charactersitic has been assigned correctly, " +
-                            + '\n' + "UUID: " + foundCharacteristics.get(i).getUuid());
-                    break;
-                case StaticResources.ESP32_HEARTH_CHARACTERISTIC:
-                    gattCharacteristicHearth = foundCharacteristics.get(i);
-                    Log.e("assignCharacteristics" , "charactersitic has been assigned correctly, " +
-                            + '\n' + "UUID: " + foundCharacteristics.get(i).getUuid());
-                    break;
-                default:
-                    //this happens when there is a characteristic in the service that isn't part of the predefined ones
-                    Log.e("assignCharacteristics", "Characteristic not listed in the predefined ones"
-                            + '\n' + "UUID: " + foundCharacteristics.get(i).getUuid());
-            }
-        }
-    }
-
-    private void disconnectGattServer(){
-        if(gatt != null){
-            gatt.disconnect();
-            gatt.close();
-        }
-    }*/
 }

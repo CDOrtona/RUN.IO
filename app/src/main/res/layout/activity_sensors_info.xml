@@ -52,18 +52,28 @@
         android:layout_marginStart="10dp"
         android:layout_marginBottom="580dp"
         android:maxLines="1"
-        android:textColor="@color/text" />
+        android:textColor="@color/text"
+        android:textAlignment="center"/>
 
     <TextView
         android:id="@+id/textView"
-        android:layout_width="wrap_content"
+        android:layout_width="119dp"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_marginStart="2dp"
-        android:layout_marginTop="173dp"
-        android:text="@string/textView_SI"
-        android:textSize="20sp" />
+        android:layout_marginStart="23dp"
+        android:layout_marginTop="235dp"
+        android:text="@string/textView_SI" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="121dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="23dp"
+        android:layout_marginTop="194dp"
+        android:text="@string/textview_connection_info" />
 
     <TextView
         android:id="@+id/temp_textView"
@@ -71,8 +81,29 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_marginStart="179dp"
-        android:layout_marginTop="181dp"
+        android:layout_marginStart="193dp"
+        android:layout_marginTop="236dp"
         android:maxLines="5" />
+
+    <TextView
+        android:id="@+id/info_textView"
+        android:layout_width="133dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="193dp"
+        android:layout_marginTop="196dp"
+        android:maxLines="5" />
+
+    <TextView
+        android:id="@+id/connection_state_textView"
+        android:layout_width="133dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="113dp"
+        android:maxLines="5"
+        android:textColor="@color/text"/>
 
 </RelativeLayout>
