@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
@@ -12,6 +13,7 @@ import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.UUID;
 
@@ -86,30 +88,36 @@ class ConnectToGattServer {
             gattServicesList = gatt.getServices();
             gattService = gatt.getService(UUID.fromString(StaticResources.ESP32_SERVICE));
             gattCharacteristicsList = gattService.getCharacteristics();
-            assignCharacteristics(gattCharacteristicsList);
-            //this is an asynchronous operation and the result is reported by the callBack method onCharacteristicRead
-            Log.d("onServiceDiscovered", "started characteristic reading...");
-            gatt.readCharacteristic(gattCharacteristicTemp);
 
             //make this a logCat that prints all the info about discovered services and characteristics
             for(int i=1; i<gattServicesList.size(); i++){
                 Log.i("onServicesDiscovered", "I'm printing the list of the services:" + gattServicesList.get(i).getUuid().toString() + '\n');
             }
 
+            assignCharacteristics(gattCharacteristicsList, gatt);
+
+            //this works if not using notify
+            //this is an asynchronous operation and the result is reported by the callBack method onCharacteristicRead
+            //Log.d("onServiceDiscovered", "started characteristic reading...");
+            //gatt.readCharacteristic(gattCharacteristicTemp);
         }
 
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicRead(gatt, characteristic, status);
-            byte[] rawData = gattCharacteristicTemp.getValue();
+            byte[] rawData = characteristic.getValue();
             String message = new String(rawData);
-            System.out.println("message from the characteristic is: " + message);
-            writeToSensor(message);
+            System.out.println("output: " + message + '\n');
         }
 
+        //this method works if the GATT server has one or more characteristic with the property NOTIFY or INDICATE
+        //whenever the value of that characteristic changes, then the GATT server notifies the client through this method
+        //so the new value of the characteristic can be read and the result of the reading will be caught by the callBack method onCharacteristicRead
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+            Log.d("onCharacteristicChanged", "method has been called");
             super.onCharacteristicChanged(gatt, characteristic);
+            gatt.readCharacteristic(characteristic);
         }
     };
 
@@ -128,11 +136,16 @@ class ConnectToGattServer {
 
     //this method is used to find the predefined characteristics and then assign them to their BluetoothGattCharacteristic object
     //this shall be removed as the characteristics are known and defined as static resources
-    private void assignCharacteristics(List<BluetoothGattCharacteristic> foundCharacteristics){
+    private void assignCharacteristics(List<BluetoothGattCharacteristic> foundCharacteristics, BluetoothGatt gat){
         for(int i=0; i<foundCharacteristics.size(); i++){
             switch(foundCharacteristics.get(i).getUuid().toString()) {
                 case StaticResources.ESP32_TEMP_CHARACTERISTIC:
                     gattCharacteristicTemp = foundCharacteristics.get(i);
+                    gatt.setCharacteristicNotification(gattCharacteristicTemp, true);
+                    //for some reason I've to declare a descriptor to make the notify function work
+                    BluetoothGattDescriptor descriptor = gattCharacteristicTemp.getDescriptor(UUID.fromString(StaticResources.ESP32_DESCRIPTOR));
+                    descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                    gatt.writeDescriptor(descriptor);
                     Log.d("assignCharacteristics" , "charactersitic has been assigned correctly, " +
                             + '\n' + "UUID: " + foundCharacteristics.get(i).getUuid());
                     break;
