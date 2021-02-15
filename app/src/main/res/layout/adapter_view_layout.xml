@@ -19,7 +19,7 @@
             android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
             android:paddingStart="?android:attr/listPreferredItemPaddingStart"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textColor="@color/text"
+            android:textColor="@color/text_listView"
             android:textSize="20sp"/>
 
         <TextView xmlns:android="http://schemas.android.com/apk/res/android"
@@ -31,7 +31,7 @@
             android:minHeight="?android:attr/listPreferredItemHeightSmall"
             android:paddingStart="?android:attr/listPreferredItemPaddingStart"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textColor="@color/text"/>
+            android:textColor="@color/text_listView"/>
 
         <TextView xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/text3"
@@ -41,7 +41,7 @@
             android:minHeight="?android:attr/listPreferredItemHeightSmall"
             android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textColor="@color/text"
+            android:textColor="@color/text_listView"
             android:textSize="20sp"/>
 
 
@@ -57,7 +57,7 @@
         android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
         android:paddingStart="?android:attr/listPreferredItemPaddingStart"
         android:textAppearance="?android:attr/textAppearanceSearchResultTitle"
-        android:textColor="@color/text"
+        android:textColor="@color/text_listView"
         android:textSize="12sp"/>
 
 </LinearLayout>

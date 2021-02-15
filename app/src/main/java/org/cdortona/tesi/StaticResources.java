@@ -30,8 +30,8 @@ class StaticResources {
     static final String EXTRA_HEART_VALUE = "heartValue";
 
     //values for the putExtra method
-    static final String STATE_CONNECTED = "connected";
-    static final String STATE_DISCONNECTED = "disconnected";
+    static final String STATE_CONNECTED = "Connected";
+    static final String STATE_DISCONNECTED = "Disconnected";
 
 
 }

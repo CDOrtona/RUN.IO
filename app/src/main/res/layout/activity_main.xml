@@ -15,7 +15,7 @@
         android:layout_marginStart="36dp"
         android:layout_marginTop="20dp"
         android:text="@string/welcome_message"
-        android:textColor="@color/text"
+        android:textColor="@color/text_listView"
         android:textSize="20sp">
 
     </TextView>

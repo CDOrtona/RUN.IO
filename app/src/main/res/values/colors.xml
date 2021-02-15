@@ -4,7 +4,8 @@
     <color name="colorPrimaryDark">#000000</color>
     <color name="colorAccent">#D81B60</color>
     <color name="background">#0277BD</color>
-    <color name="text">#FFFFFF</color>
-    <color name="buttons">#D500F9</color>
-    <color name="listView">#00796B</color>
+    <color name="text_listView">#FFFFFF</color>
+    <color name="text">#000000</color>
+    <color name="background_square2">#000000</color>
+    <color name="background_square">#135A88</color>
 </resources>

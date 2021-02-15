@@ -219,36 +219,4 @@ public class MainActivity extends AppCompatActivity {
             Log.e("leScanCallBack" ,"scan call back has failed with errorCode: " + errorCode);
         }
     };
-
-
-    //debug garbage
-    /*private void showListOfBle(){
-
-        LinearLayout linearLayout = findViewById(R.id.linear_layout);
-
-        //eventually this'll be replaced with a ListView and adapters
-        //this is used to add several buttons programmatically
-        for(int i=0; i<listScannedDevices.size(); i++) {
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT);
-
-            Button bleAdvertiser = new Button(this);
-            bleAdvertiser.setLayoutParams(params);
-            bleAdvertiser.setText(deviceScanned.getBleAddress(i));
-            bleAdvertiser.setId(i);
-
-            bleAdvertiser.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    finish();
-                }
-            });
-
-            linearLayout.addView(bleAdvertiser);
-        }
-
-
-    }*/
-
 }

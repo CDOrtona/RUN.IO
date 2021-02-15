@@ -13,11 +13,11 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginStart="225dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginStart="239dp"
+        android:layout_marginTop="23dp"
         android:background="@drawable/custom_button"
-        android:text="@string/button_connect_gatt"
-        android:onClick="connectToGatt"/>
+        android:onClick="connectToGatt"
+        android:text="@string/button_connect_gatt" />
 
     <Button
         android:id="@+id/button_disconnect"
@@ -25,45 +25,99 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginTop="77dp"
-        android:layout_marginEnd="47dp"
+        android:layout_marginTop="75dp"
+        android:layout_marginEnd="32dp"
         android:background="@drawable/custom_button"
-        android:text="@string/disconnect_gatt"
-        android:onClick="disconnectFromGatt"/>
+        android:onClick="disconnectFromGatt"
+        android:text="@string/disconnect_gatt" />
 
-    <TextView
-        android:id="@+id/address_textView"
-        android:layout_width="182dp"
-        android:layout_height="wrap_content"
+    <RelativeLayout
+        android:id="@+id/info_square"
+        android:layout_width="190dp"
+        android:layout_height="98dp"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="80dp"
-        android:maxLines="1"
-        android:textColor="@color/text" />
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="28dp"
+        android:background="@drawable/square_shape">
 
-    <TextView
-        android:id="@+id/name_textView"
-        android:layout_width="180dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginStart="10dp"
-        android:layout_marginBottom="580dp"
-        android:maxLines="1"
-        android:textColor="@color/text"
-        android:textAlignment="center"/>
+        <TextView
+            android:id="@+id/address_textView"
+            android:layout_width="182dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="42dp"
+            android:maxLines="1"
+            android:textAlignment="center"
+            android:textColor="@color/text_listView" />
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="119dp"
-        android:layout_height="wrap_content"
+        <TextView
+            android:id="@+id/connection_state_textView"
+            android:layout_width="133dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="29dp"
+            android:layout_marginTop="63dp"
+            android:layout_marginEnd="28dp"
+            android:maxLines="5"
+            android:textAlignment="center"
+            android:textColor="@color/text_listView" />
+
+        <TextView
+            android:id="@+id/name_textView"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="6dp"
+            android:layout_marginTop="19dp"
+            android:maxLines="1"
+            android:textAlignment="center"
+            android:textColor="@color/text_listView" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="359dp"
+        android:layout_height="74dp"
+        android:layout_below="@id/info_square"
         android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginStart="23dp"
-        android:layout_marginTop="235dp"
-        android:text="@string/textView_SI" />
+        android:layout_marginLeft="1dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginRight="1dp"
+        android:background="@color/background_square2">
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="119dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="9dp"
+            android:layout_marginTop="12dp"
+            android:text="@string/textView_SI"
+            android:textColor="@color/text_listView"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/temp_textView"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="101dp"
+            android:layout_marginTop="10dp"
+            android:maxLines="3"
+            android:textColor="@color/text_listView"
+            android:textSize="16sp" />
+
+    </RelativeLayout>
+
 
     <TextView
         android:id="@+id/textView3"
@@ -71,19 +125,13 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_marginStart="23dp"
-        android:layout_marginTop="194dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="300dp"
+        android:layout_marginTop="619dp"
+        android:layout_marginEnd="-61dp"
+        android:layout_marginBottom="2dp"
         android:text="@string/textview_connection_info" />
-
-    <TextView
-        android:id="@+id/temp_textView"
-        android:layout_width="133dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginStart="193dp"
-        android:layout_marginTop="236dp"
-        android:maxLines="5" />
 
     <TextView
         android:id="@+id/info_textView"
@@ -91,19 +139,9 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_marginStart="193dp"
-        android:layout_marginTop="196dp"
+        android:layout_marginStart="216dp"
+        android:layout_marginTop="565dp"
         android:maxLines="5" />
 
-    <TextView
-        android:id="@+id/connection_state_textView"
-        android:layout_width="133dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="113dp"
-        android:maxLines="5"
-        android:textColor="@color/text"/>
 
 </RelativeLayout>

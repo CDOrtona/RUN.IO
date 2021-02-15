@@ -8,7 +8,7 @@
     <string name="title_activity_main2">Main2Activity</string>
     <string name="button_connect_gatt">Connect</string>
     <string name="disconnect_gatt">Disconnect</string>
-    <string name="textView_SI">Received input:</string>
+    <string name="textView_SI">terminal:~$</string>
     <string name="textview_connection_state">Connection State</string>
     <string name="textview_connection_info">Info</string>
 </resources>
