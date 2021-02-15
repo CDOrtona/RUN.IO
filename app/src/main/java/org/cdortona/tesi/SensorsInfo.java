@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
@@ -32,8 +33,8 @@ public class SensorsInfo extends AppCompatActivity {
     //TextView objects
     TextView addressInfo;
     TextView nameInfo;
-    TextView tempValue;
-    TextView connectionInfo;
+    TextView terminal;
+    TextView temp_value;
     TextView connectionState;
 
     @Override
@@ -47,8 +48,8 @@ public class SensorsInfo extends AppCompatActivity {
         //UI setup
         addressInfo = findViewById(R.id.address_textView);
         nameInfo = findViewById(R.id.name_textView);
-        tempValue = findViewById(R.id.temp_textView);
-        connectionInfo = findViewById(R.id.info_textView);
+        terminal = findViewById(R.id.terminal_textView);
+        temp_value = findViewById(R.id.temp_textView);
         connectionState = findViewById(R.id.connection_state_textView);
 
         //I have to retrieve the info from the Intent which called this activity
@@ -59,6 +60,7 @@ public class SensorsInfo extends AppCompatActivity {
         //Setting the values of the TextViews objects
         addressInfo.setText(deviceAddress);
         nameInfo.setText(deviceName);
+        terminal.setText("");
         //hard coded, I must change it later
         connectionState.setTextColor(Color.RED);
         connectionState.setText("Disconnected");
@@ -71,6 +73,7 @@ public class SensorsInfo extends AppCompatActivity {
         intentFilter.addAction(StaticResources.BROADCAST_CONNECTION_STATE);
         intentFilter.addAction(StaticResources.BROADCAST_CHARACTERISTIC_CHANGED);
         intentFilter.addAction(StaticResources.BROADCAST_CHARACTERISTIC_READ);
+        intentFilter.addAction(StaticResources.BROADCAST_ESP32_INFO);
         registerReceiver(bleBroadcastReceiver, intentFilter);
 
     }
@@ -100,11 +103,15 @@ public class SensorsInfo extends AppCompatActivity {
                 case StaticResources.BROADCAST_CHARACTERISTIC_READ:
                     if(connectedToGatt = true){
                         String temp_value = intent.getStringExtra(StaticResources.EXTRA_TEMP_VALUE);
-                        tempValue.setText(temp_value);
+                        terminal.setText("");
+                        terminal.setText(temp_value);
                     } else {
                         //hard coded
-                        tempValue.setText("No data available");
+                        terminal.setText("No data available");
                     }
+                    break;
+                case StaticResources.BROADCAST_ESP32_INFO:
+                    printOnTerminal(intent);
                     break;
             }
         }
@@ -124,7 +131,16 @@ public class SensorsInfo extends AppCompatActivity {
     public void disconnectFromGatt(View v) {
         connectToGattServer.disconnectGattServer();
         connectedToGatt = false;
+        terminal.setText("");
         connectionState.setTextColor(Color.RED);
         connectionState.setText("Disconnected");
+    }
+
+    //this method prints all the info about the device connected to on a terminal-like TextView
+    void printOnTerminal(Intent intent) {
+        String serviceUUID = "Service UUID: " + intent.getStringExtra(StaticResources.EXTRA_TERMINAL_SERVICE);
+        String charUUID = "Characteristic UUID: " + intent.getStringExtra(StaticResources.EXTRA_TERMINAL_CHARACTERISTIC_TEMP);
+        String toPrint = serviceUUID + '\n' + charUUID;
+        terminal.setText(toPrint);
     }
 }

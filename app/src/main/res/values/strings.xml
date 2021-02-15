@@ -10,5 +10,5 @@
     <string name="disconnect_gatt">Disconnect</string>
     <string name="textView_SI">terminal:~$</string>
     <string name="textview_connection_state">Connection State</string>
-    <string name="textview_connection_info">Info</string>
+    <string name="textview_temp_value">Temperature is</string>
 </resources>

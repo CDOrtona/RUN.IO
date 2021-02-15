@@ -28,6 +28,8 @@ class StaticResources {
     static final String EXTRA_STATE_CONNECTION = "keyConnection";
     static final String EXTRA_TEMP_VALUE = "tempValue";
     static final String EXTRA_HEART_VALUE = "heartValue";
+    static final String EXTRA_TERMINAL_SERVICE = "terminalService";
+    static final String EXTRA_TERMINAL_CHARACTERISTIC_TEMP = "terminalCharacteristic";
 
     //values for the putExtra method
     static final String STATE_CONNECTED = "Connected";

@@ -102,12 +102,18 @@ class ConnectToGattServer {
             gattServicesList = gatt.getServices();
             gattService = gatt.getService(UUID.fromString(StaticResources.ESP32_SERVICE));
             gattCharacteristicsList = gattService.getCharacteristics();
-            //make this a logCat that prints all the info about discovered services and characteristics
+
+            Intent intent = new Intent(StaticResources.BROADCAST_ESP32_INFO);
+            intent.putExtra(StaticResources.EXTRA_TERMINAL_SERVICE, gattService.getUuid().toString());
+
+            //debug
             for(int i=1; i<gattServicesList.size(); i++){
                 Log.i("onServicesDiscovered", "I'm printing the list of the services:" + gattServicesList.get(i).getUuid().toString() + '\n');
             }
 
             assignCharacteristics(gattCharacteristicsList);
+            intent.putExtra(StaticResources.EXTRA_TERMINAL_CHARACTERISTIC_TEMP, gattCharacteristicTemp.getUuid().toString());
+            mContext.sendBroadcast(intent);
 
             //this works if I'm not using notify property
             //this is an asynchronous operation and the result is reported by the callBack method onCharacteristicRead
@@ -125,7 +131,7 @@ class ConnectToGattServer {
             String message = new String(rawData);
 
             System.out.println("output: " + message + '\n');
-
+            //this is printing to terminal now, it'll need to be changed
             intent.putExtra(StaticResources.EXTRA_TEMP_VALUE, message);
             mContext.sendBroadcast(intent);
         }

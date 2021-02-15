@@ -70,12 +70,12 @@
 
         <TextView
             android:id="@+id/name_textView"
-            android:layout_width="180dp"
+            android:layout_width="131dp"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
-            android:layout_marginStart="6dp"
-            android:layout_marginTop="19dp"
+            android:layout_marginStart="28dp"
+            android:layout_marginTop="18dp"
             android:maxLines="1"
             android:textAlignment="center"
             android:textColor="@color/text_listView" />
@@ -84,7 +84,7 @@
 
     <RelativeLayout
         android:layout_width="359dp"
-        android:layout_height="74dp"
+        android:layout_height="110dp"
         android:layout_below="@id/info_square"
         android:layout_alignParentStart="true"
         android:layout_marginLeft="1dp"
@@ -93,7 +93,7 @@
         android:background="@color/background_square2">
 
         <TextView
-            android:id="@+id/textView"
+            android:id="@+id/terminal_string"
             android:layout_width="119dp"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
@@ -105,42 +105,44 @@
             android:textSize="16sp" />
 
         <TextView
-            android:id="@+id/temp_textView"
+            android:id="@+id/terminal_textView"
             android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
-            android:layout_marginStart="101dp"
-            android:layout_marginTop="10dp"
-            android:maxLines="3"
+            android:layout_marginStart="98dp"
+            android:layout_marginTop="12dp"
+            android:maxLines="5"
             android:textColor="@color/text_listView"
-            android:textSize="16sp" />
+            android:textSize="13sp" />
 
     </RelativeLayout>
 
 
     <TextView
-        android:id="@+id/textView3"
+        android:id="@+id/temp_string"
         android:layout_width="121dp"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginStart="300dp"
-        android:layout_marginTop="619dp"
-        android:layout_marginEnd="-61dp"
-        android:layout_marginBottom="2dp"
-        android:text="@string/textview_connection_info" />
+        android:layout_marginStart="238dp"
+        android:layout_marginTop="618dp"
+        android:layout_marginEnd="1dp"
+        android:layout_marginBottom="3dp"
+        android:text="@string/textview_temp_value" />
 
     <TextView
-        android:id="@+id/info_textView"
+        android:id="@+id/temp_textView"
         android:layout_width="133dp"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_marginStart="216dp"
-        android:layout_marginTop="565dp"
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="227dp"
+        android:layout_marginTop="583dp"
+        android:layout_marginEnd="0dp"
         android:maxLines="5" />
 
 
