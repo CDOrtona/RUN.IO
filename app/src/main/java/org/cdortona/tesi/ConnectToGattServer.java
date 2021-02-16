@@ -113,6 +113,7 @@ class ConnectToGattServer {
 
             assignCharacteristics(gattCharacteristicsList);
             intent.putExtra(StaticResources.EXTRA_TERMINAL_CHARACTERISTIC_TEMP, gattCharacteristicTemp.getUuid().toString());
+            intent.putExtra(StaticResources.EXTRA_TERMINAL_CHARACTERISTIC_HEART, gattCharacteristicHearth.getUuid().toString());
             mContext.sendBroadcast(intent);
 
             //this works if I'm not using notify property
@@ -162,8 +163,7 @@ class ConnectToGattServer {
         }
     }
 
-    //this method is used to find the predefined characteristics and then assign them to their BluetoothGattCharacteristic object
-    //this shall be removed as the characteristics are known and defined as static resources
+    //this method is used to find the predefined characteristics and then assign them to their BluetoothGattCharacteristic objects
     private void assignCharacteristics(List<BluetoothGattCharacteristic> foundCharacteristics){
         for(int i=0; i<foundCharacteristics.size(); i++){
             switch(foundCharacteristics.get(i).getUuid().toString()) {
@@ -179,6 +179,11 @@ class ConnectToGattServer {
                     break;
                 case StaticResources.ESP32_HEARTH_CHARACTERISTIC:
                     gattCharacteristicHearth = foundCharacteristics.get(i);
+                    gatt.setCharacteristicNotification(gattCharacteristicHearth, true);
+                    //for some reason I've to declare a descriptor to make the notify function work
+                    BluetoothGattDescriptor descriptor1 = gattCharacteristicTemp.getDescriptor(UUID.fromString(StaticResources.ESP32_DESCRIPTOR));
+                    descriptor1.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                    gatt.writeDescriptor(descriptor1);
                     Log.d("assignCharacteristics" , "charactersitic has been assigned correctly, " +
                             + '\n' + "UUID: " + foundCharacteristics.get(i).getUuid());
                     break;

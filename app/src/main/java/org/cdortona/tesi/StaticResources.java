@@ -16,7 +16,7 @@ class StaticResources {
     static final String ESP32_SERVICE = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
     static final String ESP32_TEMP_CHARACTERISTIC = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
     static final String ESP32_DESCRIPTOR = "00002902-0000-1000-8000-00805f9b34fb";
-    static final String ESP32_HEARTH_CHARACTERISTIC = "dummy-value";
+    static final String ESP32_HEARTH_CHARACTERISTIC = "00002a37-0000-1000-8000-00805f9b34fb";
 
     //Broadcaster Intent Filters
     static final String BROADCAST_CONNECTION_STATE = PACKAGE_NAME + ".connectionState";
@@ -29,7 +29,8 @@ class StaticResources {
     static final String EXTRA_TEMP_VALUE = "tempValue";
     static final String EXTRA_HEART_VALUE = "heartValue";
     static final String EXTRA_TERMINAL_SERVICE = "terminalService";
-    static final String EXTRA_TERMINAL_CHARACTERISTIC_TEMP = "terminalCharacteristic";
+    static final String EXTRA_TERMINAL_CHARACTERISTIC_TEMP = "terminalCharacteristicTemp";
+    static final String EXTRA_TERMINAL_CHARACTERISTIC_HEART = "terminalCharacteristicHeart";
 
     //values for the putExtra method
     static final String STATE_CONNECTED = "Connected";

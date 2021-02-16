@@ -117,6 +117,7 @@ public class SensorsInfo extends AppCompatActivity {
         }
     };
 
+    //add an if that checks if the adaptor is connected to the GATT server already
     public void connectToGatt(View v) {
         try {
             connectToGattServer.connectToGatt(deviceAddress);
@@ -139,7 +140,8 @@ public class SensorsInfo extends AppCompatActivity {
     //this method prints all the info about the device connected to on a terminal-like TextView
     void printOnTerminal(Intent intent) {
         String serviceUUID = "Service UUID: " + intent.getStringExtra(StaticResources.EXTRA_TERMINAL_SERVICE);
-        String charUUID = "Characteristic UUID: " + intent.getStringExtra(StaticResources.EXTRA_TERMINAL_CHARACTERISTIC_TEMP);
+        String charUUID = "Characteristics UUID: " + intent.getStringExtra(StaticResources.EXTRA_TERMINAL_CHARACTERISTIC_TEMP) + '\n' +
+                                                     intent.getStringExtra(StaticResources.EXTRA_TERMINAL_CHARACTERISTIC_HEART);
         String toPrint = serviceUUID + '\n' + charUUID;
         terminal.setText(toPrint);
     }
