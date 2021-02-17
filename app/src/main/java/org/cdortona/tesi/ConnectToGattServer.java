@@ -140,6 +140,7 @@ class ConnectToGattServer {
         //this method works if the GATT server has one or more characteristic with the property NOTIFY or INDICATE
         //whenever the value of that characteristic changes, then the GATT server notifies the client through this method
         //so the new value of the characteristic can be read and the result of the reading will be caught by the callBack method onCharacteristicRead
+        //this permits an asynchronous communication between the server and the client
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             Log.d("onCharacteristicChanged", "method has been called");
@@ -170,7 +171,8 @@ class ConnectToGattServer {
                 case StaticResources.ESP32_TEMP_CHARACTERISTIC:
                     gattCharacteristicTemp = foundCharacteristics.get(i);
                     gatt.setCharacteristicNotification(gattCharacteristicTemp, true);
-                    //for some reason I've to declare a descriptor to make the notify function work
+                    //in order to use the notify property of the characteristic, a descriptor has been defined which lets the client
+                    //decide whether enabling the notify property of the GATT server characteristic or not
                     BluetoothGattDescriptor descriptor = gattCharacteristicTemp.getDescriptor(UUID.fromString(StaticResources.ESP32_DESCRIPTOR));
                     descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
                     gatt.writeDescriptor(descriptor);
