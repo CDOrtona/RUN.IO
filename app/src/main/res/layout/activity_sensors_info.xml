@@ -39,7 +39,7 @@
         android:layout_alignParentTop="true"
         android:layout_marginStart="16dp"
         android:layout_marginTop="28dp"
-        android:background="@drawable/square_shape">
+        android:background="@drawable/device_info_box">
 
         <TextView
             android:id="@+id/address_textView"
@@ -52,7 +52,7 @@
             android:layout_marginTop="42dp"
             android:maxLines="1"
             android:textAlignment="center"
-            android:textColor="@color/text_listView" />
+            android:textColor="@color/primary_text" />
 
         <TextView
             android:id="@+id/connection_state_textView"
@@ -66,7 +66,7 @@
             android:layout_marginEnd="28dp"
             android:maxLines="5"
             android:textAlignment="center"
-            android:textColor="@color/text_listView" />
+            android:textColor="@color/primary_text" />
 
         <TextView
             android:id="@+id/name_textView"
@@ -78,7 +78,7 @@
             android:layout_marginTop="18dp"
             android:maxLines="1"
             android:textAlignment="center"
-            android:textColor="@color/text_listView" />
+            android:textColor="@color/primary_text" />
 
     </RelativeLayout>
 
@@ -90,7 +90,7 @@
         android:layout_marginLeft="1dp"
         android:layout_marginTop="15dp"
         android:layout_marginRight="1dp"
-        android:background="@color/background_square2">
+        android:background="@color/logger">
 
         <TextView
             android:id="@+id/terminal_string"
@@ -101,7 +101,7 @@
             android:layout_marginStart="9dp"
             android:layout_marginTop="12dp"
             android:text="@string/textView_SI"
-            android:textColor="@color/text_listView"
+            android:textColor="@color/primary_text"
             android:textSize="16sp" />
 
         <TextView
@@ -113,7 +113,7 @@
             android:layout_marginStart="98dp"
             android:layout_marginTop="12dp"
             android:maxLines="5"
-            android:textColor="@color/text_listView"
+            android:textColor="@color/primary_text"
             android:textSize="13sp" />
 
     </RelativeLayout>

@@ -5,16 +5,16 @@
     <!-- "Mark Favorite", should appear as action button if possible -->
     <item
         android:id="@+id/action_scan"
-        android:title="SCAN"
-        app:showAsAction="always"/>
+        android:title="@string/toolbar_main_scan"
+        app:showAsAction="ifRoom" />
 
     <!-- Settings, should always be in the overflow -->
     <item android:id="@+id/action_rssi_graph"
-        android:title="RSSI graph"
+        android:title="@string/toolbar_main_rssi"
         app:showAsAction="never"/>
 
     <item android:id="@+id/action_about"
-        android:title="About"
+        android:title="@string/toolbar_main_about"
         app:showAsAction="never"/>
 
 </menu>
