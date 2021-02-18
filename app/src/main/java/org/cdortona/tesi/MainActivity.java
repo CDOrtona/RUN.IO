@@ -1,5 +1,6 @@
 package org.cdortona.tesi;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
@@ -18,6 +19,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 
@@ -50,6 +54,9 @@ public class MainActivity extends AppCompatActivity {
 
     //ListView
     CustomAdapterView customAdapter;
+
+    //Toolbar
+    Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,8 +94,37 @@ public class MainActivity extends AppCompatActivity {
         listView.setAdapter(customAdapter);
 
         //Toolbar
-        Toolbar toolbar = findViewById(R.id.toolbar_support);
+        toolbar = findViewById(R.id.toolbar_support);
         setSupportActionBar(toolbar);
+        //toolbar.inflateMenu(R.menu.toolbar_menu);
+    }
+
+    //this lets me add the menu resource to the toolbar
+    //from api 11 and higher items from the option menu are automatically added to the toolbar if present
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.toolbar_menu, menu);
+        return true;
+    }
+
+    //this method is called whenever the user select an item from the toolbar menu
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case (R.id.action_scan):
+                startScan();
+                return true;
+            case (R.id.action_rssi_graph):
+                //I have to set up the graph
+                return true;
+            case (R.id.action_about):
+                //dialog box with info
+                return true;
+            default:
+                //item selected not recognized
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override
@@ -165,7 +201,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //this starts the scan of the BLE advertiser nearby
-    public void startScan(View v){
+    public void startScan(){
         if(!scanning) {
 
             Toast.makeText(this, "Scanning for nearby devices", Toast.LENGTH_SHORT ).show();
