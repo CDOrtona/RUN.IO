@@ -1,6 +1,7 @@
 package org.cdortona.tesi;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
@@ -54,9 +55,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if (getSupportActionBar() != null) {
+        /*if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
-        }
+        }*/
 
         //initialize bluetooth adapter
         bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
@@ -84,6 +85,10 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         listView.setAdapter(customAdapter);
+
+        //Toolbar
+        Toolbar toolbar = findViewById(R.id.toolbar_support);
+        setSupportActionBar(toolbar);
     }
 
     @Override
