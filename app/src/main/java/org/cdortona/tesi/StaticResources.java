@@ -38,5 +38,7 @@ class StaticResources {
     static final String STATE_CONNECTED = "Connected";
     static final String STATE_DISCONNECTED = "Disconnected";
 
+    //MainActivity
+    static final String WEB_PAGE = PACKAGE_NAME + ".webUrl";
 
 }

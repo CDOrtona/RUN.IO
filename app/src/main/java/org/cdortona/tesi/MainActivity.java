@@ -94,9 +94,9 @@ public class MainActivity extends AppCompatActivity {
         listView.setAdapter(customAdapter);
 
         //Toolbar
-        toolbar = findViewById(R.id.toolbar_support);
+        toolbar = findViewById(R.id.toolbar_main);
         setSupportActionBar(toolbar);
-        //toolbar.inflateMenu(R.menu.toolbar_menu);
+        //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     //this lets me add the menu resource to the toolbar
@@ -119,7 +119,9 @@ public class MainActivity extends AppCompatActivity {
                 //I have to set up the graph
                 return true;
             case (R.id.action_about):
-                //dialog box with info
+                Intent aboutWebView = new Intent(MainActivity.this, AboutWebView.class);
+                aboutWebView.putExtra(StaticResources.WEB_PAGE, "https://github.com/CDOrtona");
+                startActivity(aboutWebView);
                 return true;
             default:
                 //item selected not recognized

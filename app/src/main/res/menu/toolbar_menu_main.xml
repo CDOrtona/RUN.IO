@@ -6,12 +6,12 @@
     <item
         android:id="@+id/action_scan"
         android:title="@string/toolbar_main_scan"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="ifRoom"/>
 
     <!-- Settings, should always be in the overflow -->
     <item android:id="@+id/action_rssi_graph"
         android:title="@string/toolbar_main_rssi"
-        app:showAsAction="never"/>
+        app:showAsAction="never" />
 
     <item android:id="@+id/action_about"
         android:title="@string/toolbar_main_about"
