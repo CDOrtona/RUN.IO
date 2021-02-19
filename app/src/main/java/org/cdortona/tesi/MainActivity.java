@@ -84,8 +84,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                 final Intent intent = new Intent(MainActivity.this, SensorsInfo.class);
-                intent.putExtra("address", devicesScannedList.get(position).getBleAddress());
-                intent.putExtra("name", devicesScannedList.get(position).getDeviceName());
+                intent.putExtra(StaticResources.EXTRA_CHOOSEN_ADDRESS, devicesScannedList.get(position).getBleAddress());
+                intent.putExtra(StaticResources.EXTRA_CHOOSEN_NAME, devicesScannedList.get(position).getDeviceName());
                 startActivity(intent);
 
             }

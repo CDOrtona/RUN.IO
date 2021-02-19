@@ -4,15 +4,17 @@
     <string name="button_scan">SCAN</string>
     <string name="button_stop">STOP</string>
 
+    <!--Toasts-->
     <string name="ble_not_supported">Your device does not support Bluetooth Low Energy</string>
-    <string name="title_activity_main2">Main2Activity</string>
-    <string name="button_connect_gatt">Connect</string>
-    <string name="disconnect_gatt">Disconnect</string>
+
+    <!--SensorsInfo-->
     <string name="textView_SI">terminal:~$</string>
     <string name="textview_connection_state">Connection State</string>
     <string name="textview_temp_value">Temperature is</string>
+    <string name="textView_device_info">Device Info</string>
+    <string name="textView_device_infos">Address: \n\n Name:</string>
 
-
+    <!--Toolbars-->
     <string name="toolbar_main_scan">SCAN</string>
     <string name="toolbar_main_stopScan">STOP SCAN</string>
     <string name="toolbar_main_rssi">RSSI Graph</string>

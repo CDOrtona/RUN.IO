@@ -38,7 +38,8 @@ class StaticResources {
     static final String STATE_CONNECTED = "Connected";
     static final String STATE_DISCONNECTED = "Disconnected";
 
-    //MainActivity
+    //General static Resources
     static final String WEB_PAGE = PACKAGE_NAME + ".webUrl";
-
+    static final String EXTRA_CHOOSEN_ADDRESS = PACKAGE_NAME + ".address";
+    static final String EXTRA_CHOOSEN_NAME = PACKAGE_NAME + ".name";
 }

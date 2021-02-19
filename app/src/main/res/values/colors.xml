@@ -8,6 +8,7 @@
     <color name="secondary_text">#757575</color>
     <color name="white">#FFFFFF</color>
 
+    <color name="shadow">#CFCECE</color>
     <color name="logger">#000000</color>
     <color name="background_info_box">#135A88</color>
 

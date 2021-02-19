@@ -38,15 +38,12 @@ public class SensorsInfo extends AppCompatActivity {
     //TextView objects
     TextView addressInfo;
     TextView nameInfo;
-    TextView terminal;
-    TextView temp_value;
+    /*TextView terminal;
+    TextView temp_value;*/
     TextView connectionState;
 
     //Toolbar
     Toolbar toolbar;
-
-    //variable used to set the toolbar action to connect or to disconnect
-    boolean gattConnected;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,19 +53,21 @@ public class SensorsInfo extends AppCompatActivity {
         //UI setup
         addressInfo = findViewById(R.id.address_textView);
         nameInfo = findViewById(R.id.name_textView);
-        terminal = findViewById(R.id.terminal_textView);
-        temp_value = findViewById(R.id.temp_textView);
+        /*terminal = findViewById(R.id.terminal_textView);
+        temp_value = findViewById(R.id.temp_textView);*/
         connectionState = findViewById(R.id.connection_state_textView);
+
 
         //I have to retrieve the info from the Intent which called this activity
         Intent receivedIntent = getIntent();
-        deviceAddress = receivedIntent.getStringExtra("address");
-        deviceName = receivedIntent.getStringExtra("name");
+        deviceAddress = receivedIntent.getStringExtra(StaticResources.EXTRA_CHOOSEN_ADDRESS);
+        deviceName = receivedIntent.getStringExtra(StaticResources.EXTRA_CHOOSEN_NAME);
+
 
         //Setting the values of the TextViews objects
         addressInfo.setText(deviceAddress);
         nameInfo.setText(deviceName);
-        terminal.setText("");
+        ///terminal.setText("");
         //hard coded, I must change it later
         connectionState.setTextColor(Color.RED);
         connectionState.setText("Disconnected");
@@ -168,7 +167,7 @@ public class SensorsInfo extends AppCompatActivity {
                         connectionState.setText(intent.getStringExtra(StaticResources.EXTRA_STATE_CONNECTION));
                     }
                         break;
-                case StaticResources.BROADCAST_CHARACTERISTIC_READ:
+                /*case StaticResources.BROADCAST_CHARACTERISTIC_READ:
                     if(connectedToGatt = true){
                         String temp_value = intent.getStringExtra(StaticResources.EXTRA_TEMP_VALUE);
                         terminal.setText("");
@@ -180,7 +179,7 @@ public class SensorsInfo extends AppCompatActivity {
                     break;
                 case StaticResources.BROADCAST_ESP32_INFO:
                     printOnTerminal(intent);
-                    break;
+                    break;*/
             }
         }
     };
@@ -200,7 +199,7 @@ public class SensorsInfo extends AppCompatActivity {
     public void disconnectFromGatt() {
         connectToGattServer.disconnectGattServer();
         connectedToGatt = false;
-        terminal.setText("");
+        ///terminal.setText("");
         connectionState.setTextColor(Color.RED);
         connectionState.setText("Disconnected");
     }
@@ -211,6 +210,6 @@ public class SensorsInfo extends AppCompatActivity {
         String charUUID = "Characteristics UUID: " + intent.getStringExtra(StaticResources.EXTRA_TERMINAL_CHARACTERISTIC_TEMP) + '\n' +
                                                      intent.getStringExtra(StaticResources.EXTRA_TERMINAL_CHARACTERISTIC_HEART);
         String toPrint = serviceUUID + '\n' + charUUID;
-        terminal.setText(toPrint);
+        ///terminal.setText(toPrint);
     }
 }
