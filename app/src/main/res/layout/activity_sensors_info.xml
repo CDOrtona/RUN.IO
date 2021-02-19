@@ -46,6 +46,7 @@
             android:drawablePadding="30dp"
             android:padding="30dp"
             android:text="@string/textView_device_infos"
+            android:textStyle="bold"
             android:textColor="@color/primary_text" />
 
         <TextView
@@ -77,7 +78,8 @@
             android:layout_alignParentTop="true"
             android:layout_marginStart="244dp"
             android:layout_marginTop="111dp"
-            android:layout_marginBottom="7dp" />
+            android:layout_marginBottom="7dp"
+            android:textStyle="bold"/>
 
         <ScrollView
             android:layout_width="match_parent"
@@ -102,8 +104,6 @@
                     android:textColor="@color/white"
                     android:textSize="18sp" />
 
-                <!--HeartBeat-->
-
                 <TextView
                     android:id="@+id/textView_temp"
                     android:layout_width="160dp"
@@ -118,8 +118,10 @@
                     android:drawablePadding="20dp"
                     android:padding="30dp"
                     android:gravity="center"
-                    android:text="asdasd"
+                    android:text=""
                     android:textColor="@color/primary_text" />
+
+                <!--HeartBeat-->
 
                 <TextView
                     android:id="@+id/textView_header_heart"
@@ -149,7 +151,7 @@
                     android:drawableTop="@drawable/heartbeat"
                     android:drawablePadding="20sp"
                     android:gravity="center"
-                    android:text="asdasd"
+                    android:text=""
                     android:textColor="@color/primary_text" />
 
                 <!--Brightness-->
@@ -182,13 +184,13 @@
                     android:drawableTop="@drawable/brightness"
                     android:drawablePadding="20dp"
                     android:gravity="center"
-                    android:text="asdasd"
+                    android:text=""
                     android:textColor="@color/primary_text" />
 
                 <!--Position-->
 
                 <TextView
-                    android:id="@+id/textView_acceleration"
+                    android:id="@+id/textView_position"
                     android:layout_width="160dp"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/textView_heart"
@@ -202,7 +204,7 @@
                     android:textSize="18sp" />
 
                 <TextView
-                    android:id="@+id/textView_header_acceleration"
+                    android:id="@+id/textView_header_position"
                     android:layout_width="160dp"
                     android:layout_height="160dp"
                     android:layout_alignParentEnd="true"
@@ -215,18 +217,13 @@
                     android:drawableTop="@drawable/gps"
                     android:drawablePadding="20sp"
                     android:gravity="center"
-                    android:text="asdasdsad"
+                    android:text=""
                     android:textColor="@color/primary_text" />
 
             </RelativeLayout>
 
+         </ScrollView>
 
-    </ScrollView>
-
-
-
-</RelativeLayout>
-
-
+    </RelativeLayout>
 
 </LinearLayout>

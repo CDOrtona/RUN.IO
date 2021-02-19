@@ -25,6 +25,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -52,6 +53,9 @@ public class MainActivity extends AppCompatActivity {
     //it's very important as in a LE application we want to reduce battery-intensive tasks
     private static final long SCAN_PERIOD = 8000;
 
+    //noBlueooth Icon
+    ImageView noBluetoothIcon;
+
     //ListView
     CustomAdapterView customAdapter;
 
@@ -62,9 +66,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        /*if (getSupportActionBar() != null) {
-            getSupportActionBar().hide();
-        }*/
+
+        //UI setup
+        noBluetoothIcon = findViewById(R.id.noBluetooth);
 
         //initialize bluetooth adapter
         bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
@@ -232,6 +236,9 @@ public class MainActivity extends AppCompatActivity {
         //If I declared it in the onCreate, it'd be null if the user didn't activate the bluetooth beforehand
         bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
         if(!scanning && bluetoothAdapter.isEnabled()) {
+
+
+            noBluetoothIcon.setVisibility(View.INVISIBLE);
 
             Toast.makeText(this, "Scanning for nearby devices", Toast.LENGTH_SHORT ).show();
 

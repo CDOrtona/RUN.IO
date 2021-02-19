@@ -12,8 +12,7 @@
         android:background="@color/colorPrimary"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         app:popupTheme="@style/AppTheme.PopupOverlay"
-        app:title="Scanner"
-        app:subtitle="Ble Devices" />
+        app:title="AndroShirt"/>
 
     <ListView
         android:id="@+id/list_view"
@@ -26,6 +25,17 @@
         android:layout_marginEnd="2dp"
         android:background="@color/white"
         android:drawSelectorOnTop="false" />
+
+    <ImageView
+        android:id="@+id/noBluetooth"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/toolbar_main"
+        android:src="@drawable/nobluetooth"
+        android:padding="100dp">
+
+
+    </ImageView>
 
 
 </RelativeLayout>

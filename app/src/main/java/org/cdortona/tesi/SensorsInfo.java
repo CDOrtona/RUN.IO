@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -36,11 +37,14 @@ public class SensorsInfo extends AppCompatActivity {
     boolean connectedToGatt = false;
 
     //TextView objects
+    ///TextView terminal;
     TextView addressInfo;
     TextView nameInfo;
-    /*TextView terminal;
-    TextView temp_value;*/
     TextView connectionState;
+    TextView tempValue;
+    TextView heartValue;
+    TextView brightness;
+    TextView position;
 
     //Toolbar
     Toolbar toolbar;
@@ -51,11 +55,14 @@ public class SensorsInfo extends AppCompatActivity {
         setContentView(R.layout.activity_sensors_info);
 
         //UI setup
+        ///*terminal = findViewById(R.id.terminal_textView);
         addressInfo = findViewById(R.id.address_textView);
         nameInfo = findViewById(R.id.name_textView);
-        /*terminal = findViewById(R.id.terminal_textView);
-        temp_value = findViewById(R.id.temp_textView);*/
         connectionState = findViewById(R.id.connection_state_textView);
+        tempValue = findViewById(R.id.textView_temp);
+        heartValue = findViewById(R.id.textView_heart);
+        brightness = findViewById(R.id.textView_brightness);
+        position = findViewById(R.id.textView_position);
 
 
         //I have to retrieve the info from the Intent which called this activity
@@ -65,7 +72,9 @@ public class SensorsInfo extends AppCompatActivity {
 
 
         //Setting the values of the TextViews objects
+        addressInfo.setTypeface(Typeface.SANS_SERIF);
         addressInfo.setText(deviceAddress);
+        nameInfo.setTypeface(Typeface.SANS_SERIF);
         nameInfo.setText(deviceName);
         ///terminal.setText("");
         //hard coded, I must change it later
@@ -167,17 +176,18 @@ public class SensorsInfo extends AppCompatActivity {
                         connectionState.setText(intent.getStringExtra(StaticResources.EXTRA_STATE_CONNECTION));
                     }
                         break;
-                /*case StaticResources.BROADCAST_CHARACTERISTIC_READ:
+                case StaticResources.BROADCAST_CHARACTERISTIC_READ:
                     if(connectedToGatt = true){
-                        String temp_value = intent.getStringExtra(StaticResources.EXTRA_TEMP_VALUE);
-                        terminal.setText("");
-                        terminal.setText(temp_value);
+                        String tempRead = intent.getStringExtra(StaticResources.EXTRA_TEMP_VALUE);
+                        tempValue.setText(tempRead);
+                        ///terminal.setText("");
+                        ///terminal.setText(temp_value);
                     } else {
                         //hard coded
-                        terminal.setText("No data available");
+                        ///terminal.setText("No data available");
                     }
                     break;
-                case StaticResources.BROADCAST_ESP32_INFO:
+                /*case StaticResources.BROADCAST_ESP32_INFO:
                     printOnTerminal(intent);
                     break;*/
             }
