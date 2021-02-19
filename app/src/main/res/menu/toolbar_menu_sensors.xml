@@ -3,19 +3,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/action_scan"
-        android:title="@string/toolbar_main_scan"
+        android:id="@+id/action_connect"
+        android:title="@string/menu_connect"
         app:showAsAction="always"/>
 
     <item
-        android:id="@+id/action_stopScan"
-        android:title="@string/toolbar_main_stopScan"
+        android:id="@+id/action_disconnect"
+        android:title="@string/menu_disconnect"
         app:showAsAction="always"
         android:visible="false"/>
-
-    <item android:id="@+id/action_rssi_graph"
-        android:title="@string/toolbar_main_rssi"
-        app:showAsAction="never" />
 
     <item android:id="@+id/action_about"
         android:title="@string/toolbar_main_about"

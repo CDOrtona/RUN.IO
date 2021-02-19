@@ -18,7 +18,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
-        <activity android:name=".AboutWebView"></activity>
+        <activity android:name=".AboutWebView"/>
         <activity android:name=".SensorsInfo" />
         <activity android:name=".MainActivity">
             <intent-filter>

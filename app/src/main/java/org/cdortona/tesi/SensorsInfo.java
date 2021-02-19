@@ -1,6 +1,8 @@
 package org.cdortona.tesi;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -10,6 +12,9 @@ import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
@@ -37,13 +42,16 @@ public class SensorsInfo extends AppCompatActivity {
     TextView temp_value;
     TextView connectionState;
 
+    //Toolbar
+    Toolbar toolbar;
+
+    //variable used to set the toolbar action to connect or to disconnect
+    boolean gattConnected;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sensors_info);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().hide();
-        }
 
         //UI setup
         addressInfo = findViewById(R.id.address_textView);
@@ -76,6 +84,65 @@ public class SensorsInfo extends AppCompatActivity {
         intentFilter.addAction(StaticResources.BROADCAST_ESP32_INFO);
         registerReceiver(bleBroadcastReceiver, intentFilter);
 
+        //Toolbar
+        toolbar = findViewById(R.id.toolbar_sensors);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+    }
+
+    //Toolbar set up
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.toolbar_menu_sensors, menu);
+        return true;
+    }
+
+    //this is called whenever the user clicks on the back arrow
+    //it works as an UP button
+    public boolean onSupportNavigateUp() {
+        //this is called when the activity detects the user pressed the back button
+        onBackPressed();
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case (R.id.action_connect):
+                connectToGatt();
+                return true;
+            case (R.id.action_disconnect):
+                invalidateOptionsMenu();
+                disconnectFromGatt();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        if(connectedToGatt){
+            menu.findItem(R.id.action_connect).setVisible(false);
+            menu.findItem(R.id.action_disconnect).setVisible(true);
+            return true;
+        }
+        else if(!connectedToGatt){
+            menu.findItem(R.id.action_connect).setVisible(true);
+            menu.findItem(R.id.action_disconnect).setVisible(false);
+            return true;
+        } else {
+            return super.onPrepareOptionsMenu(menu);
+        }
+    }
+
+    //I override this method to make sure that the GATT server is disconnected if the users goes back to the previous activity
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        disconnectFromGatt();
     }
 
     //this is used to receive the broadcast announcements that are being sent from the class ConnectToGattServer()
@@ -91,6 +158,7 @@ public class SensorsInfo extends AppCompatActivity {
                 case StaticResources.BROADCAST_CONNECTION_STATE:
                     if(intent.getStringExtra(StaticResources.EXTRA_STATE_CONNECTION).equals(StaticResources.STATE_CONNECTED)) {
                         connectedToGatt = true;
+                        invalidateOptionsMenu();
                         connectionState.setTextColor(Color.GREEN);
                         connectionState.setText(intent.getStringExtra(StaticResources.EXTRA_STATE_CONNECTION));
                     }
@@ -118,7 +186,7 @@ public class SensorsInfo extends AppCompatActivity {
     };
 
     //add an if that checks if the adaptor is connected to the GATT server already
-    public void connectToGatt(View v) {
+    public void connectToGatt() {
         try {
             connectToGattServer.connectToGatt(deviceAddress);
             //hard coded
@@ -129,7 +197,7 @@ public class SensorsInfo extends AppCompatActivity {
         }
     }
 
-    public void disconnectFromGatt(View v) {
+    public void disconnectFromGatt() {
         connectToGattServer.disconnectGattServer();
         connectedToGatt = false;
         terminal.setText("");

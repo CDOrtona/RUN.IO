@@ -14,7 +14,10 @@
 
 
     <string name="toolbar_main_scan">SCAN</string>
+    <string name="toolbar_main_stopScan">STOP SCAN</string>
     <string name="toolbar_main_rssi">RSSI Graph</string>
     <string name="toolbar_main_about">About</string>
+    <string name="menu_connect">CONNECT</string>
+    <string name="menu_disconnect">DISCONNECT</string>
 
 </resources>

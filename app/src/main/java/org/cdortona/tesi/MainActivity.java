@@ -71,7 +71,6 @@ public class MainActivity extends AppCompatActivity {
         bluetoothAdapter = bluetoothManager.getAdapter();
 
         //initialize scan variables
-        bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
         devicesScannedList = new ArrayList<>();
 
         checkBleStatus();
@@ -96,7 +95,6 @@ public class MainActivity extends AppCompatActivity {
         //Toolbar
         toolbar = findViewById(R.id.toolbar_main);
         setSupportActionBar(toolbar);
-        //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     //this lets me add the menu resource to the toolbar
@@ -113,7 +111,15 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case (R.id.action_scan):
+                //once the system calls onCreateOptionMenu, the menu won't be changed from the one specified
+                //in order to change it at run-time I call the following method
+                //whose response is handled by onPrepareOptionsMenu
+                invalidateOptionsMenu();
                 startScan();
+                return true;
+            case (R.id.action_stopScan):
+                invalidateOptionsMenu();
+                stopScan();
                 return true;
             case (R.id.action_rssi_graph):
                 //I have to set up the graph
@@ -128,6 +134,23 @@ public class MainActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
+
+    //this callBack takes as parameter the menu that was initialized
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+       if(scanning) {
+           menu.findItem(R.id.action_scan).setVisible(false);
+           menu.findItem(R.id.action_stopScan).setVisible(true);
+           return true;
+       }
+       else if(!scanning){
+           menu.findItem(R.id.action_scan).setVisible(true);
+           menu.findItem(R.id.action_stopScan).setVisible(false);
+           return true;
+       }
+       return super.onPrepareOptionsMenu(menu);
+    }
+
 
     @Override
     protected  void onResume(){
@@ -173,6 +196,7 @@ public class MainActivity extends AppCompatActivity {
     //The requestCode used to lunch the activity as well as the resultCode are returned, the requestCode is used to identify the who this result come from
     //The resultCode will be RESULT_CANCELED if the activity explicitly returned that, didn't return any result, or crashed during its operation
     protected void onActivityResult(int requestCode, int resultCode, Intent data ){
+        super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == REQUEST_ENABLE_BT){
             if(resultCode == RESULT_OK){
                 //hard coded
@@ -181,7 +205,7 @@ public class MainActivity extends AppCompatActivity {
             else if(resultCode == RESULT_CANCELED){
                 //hard coded
                 Toast.makeText(this,"Bluetooth wasn't enabled", Toast.LENGTH_LONG).show();
-                finish();
+                //I disable the bluetooth as stated by the user
             }
         }
     }
@@ -204,14 +228,15 @@ public class MainActivity extends AppCompatActivity {
 
     //this starts the scan of the BLE advertiser nearby
     public void startScan(){
-        if(!scanning) {
+        //I declare the variable here so it doesn't crash when I start the scan after asking the user to enable the bluetooth
+        //If I declared it in the onCreate, it'd be null if the user didn't activate the bluetooth beforehand
+        bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
+        if(!scanning && bluetoothAdapter.isEnabled()) {
 
             Toast.makeText(this, "Scanning for nearby devices", Toast.LENGTH_SHORT ).show();
 
             //this is used to flush the entries in the viewList whenever a new scan occurs
             customAdapter.clear();
-
-            //disconnectGattServer();
 
             //the handler is used to schedule an event to happen at some point in the future
             //in this case the method postDelayed causes the runnable to be added to the message queue
@@ -221,8 +246,7 @@ public class MainActivity extends AppCompatActivity {
                 public void run() {
                     scanning = false;
                     //this's going to stop the scan if the user doesn't stop it manually before SCAN_PERIOD
-                    bluetoothLeScanner.stopScan(leScanCallBack);
-                    Log.d("startScan", "scanning has stopped after time elapsed");
+                    stopScan();
                 }
             }, SCAN_PERIOD);
             scanning = true;
@@ -233,15 +257,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //this stops the scan before the time elapses
-    // when the button is pressed
-    /*public void stopScan(View v){
-        if(scanning){
-            bluetoothLeScanner.stopScan(leScanCallBack);
-            Log.d("stopScan", "BLE scanner has been stopped");
-            //the following code is debug garbage, it needs to be deleted
-            deviceScanned.printDeviceInfo();
-        }
-    }*/
+    // if the button is pressed
+    public void stopScan(){
+        scanning = false;
+        bluetoothLeScanner.stopScan(leScanCallBack);
+        Log.d("stopScan", "BLE scanner has stopped");
+    }
 
     //callBack method used to catch the result of startScan()
     //this is an abstract class
