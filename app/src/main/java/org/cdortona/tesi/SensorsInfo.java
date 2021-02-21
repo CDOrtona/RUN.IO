@@ -125,6 +125,14 @@ public class SensorsInfo extends AppCompatActivity {
                 invalidateOptionsMenu();
                 disconnectFromGatt();
                 return true;
+            case (R.id.action_graph_rssi):
+                Intent rssiGraph = new Intent(SensorsInfo.this, GraphRssi.class);
+                rssiGraph.putExtra(StaticResources.EXTRA_CHOOSEN_ADDRESS, deviceAddress);
+                startActivity(rssiGraph);
+                return true;
+            case (R.id.action_mqtt):
+                //MQTT
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }

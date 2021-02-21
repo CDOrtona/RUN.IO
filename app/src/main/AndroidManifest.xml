@@ -18,14 +18,18 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
-        <activity android:name=".AdapterInfo"
-            android:screenOrientation="portrait">
-        </activity>
-        <activity android:name=".AboutWebView"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".SensorsInfo"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".MainActivity"
+        <activity android:name=".GraphRssi"></activity>
+        <activity
+            android:name=".AdapterInfo"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".AboutWebView"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".SensorsInfo"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".MainActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
