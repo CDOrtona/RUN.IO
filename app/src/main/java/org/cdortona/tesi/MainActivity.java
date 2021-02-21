@@ -23,6 +23,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Adapter;
 import android.widget.AdapterView;
 
 import android.widget.ImageView;
@@ -125,8 +126,9 @@ public class MainActivity extends AppCompatActivity {
                 invalidateOptionsMenu();
                 stopScan();
                 return true;
-            case (R.id.action_rssi_graph):
-                //I have to set up the graph
+            case (R.id.action_adapter_info):
+                Intent adapterInfo = new Intent(MainActivity.this, AdapterInfo.class);
+                startActivity(adapterInfo);
                 return true;
             case (R.id.action_about):
                 Intent aboutWebView = new Intent(MainActivity.this, AboutWebView.class);

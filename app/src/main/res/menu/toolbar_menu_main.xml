@@ -13,8 +13,8 @@
         app:showAsAction="always"
         android:visible="false"/>
 
-    <item android:id="@+id/action_rssi_graph"
-        android:title="@string/toolbar_main_rssi"
+    <item android:id="@+id/action_adapter_info"
+        android:title="@string/toolbar_main_adapter_info"
         app:showAsAction="never" />
 
     <item android:id="@+id/action_about"
