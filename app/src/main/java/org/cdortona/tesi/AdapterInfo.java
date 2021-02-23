@@ -27,7 +27,6 @@ public class AdapterInfo extends AppCompatActivity {
     TextView model;
     TextView hasBLE;
     TextView bleAddress;
-    static final String COLOR_SECONDARY_TEXT = "#757575";
 
     //BLE
     BluetoothManager manager;

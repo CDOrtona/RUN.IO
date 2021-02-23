@@ -18,6 +18,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * Cristian D'Ortona
@@ -63,7 +64,6 @@ public class SensorsInfo extends AppCompatActivity {
         heartValue = findViewById(R.id.textView_heart);
         brightness = findViewById(R.id.textView_brightness);
         position = findViewById(R.id.textView_position);
-
 
         //I have to retrieve the info from the Intent which called this activity
         Intent receivedIntent = getIntent();
@@ -131,6 +131,7 @@ public class SensorsInfo extends AppCompatActivity {
                 startActivity(rssiGraph);
                 return true;
             case (R.id.action_mqtt):
+                Toast.makeText(this, "Send data to Cloud", Toast.LENGTH_SHORT).show();
                 //MQTT
                 return true;
             default:
@@ -143,11 +144,13 @@ public class SensorsInfo extends AppCompatActivity {
         if(connectedToGatt){
             menu.findItem(R.id.action_connect).setVisible(false);
             menu.findItem(R.id.action_disconnect).setVisible(true);
+            menu.findItem(R.id.action_mqtt).setEnabled(true);
             return true;
         }
         else if(!connectedToGatt){
             menu.findItem(R.id.action_connect).setVisible(true);
             menu.findItem(R.id.action_disconnect).setVisible(false);
+            menu.findItem(R.id.action_mqtt).setEnabled(false);
             return true;
         } else {
             return super.onPrepareOptionsMenu(menu);
@@ -180,6 +183,7 @@ public class SensorsInfo extends AppCompatActivity {
                     }
                     else if(intent.getStringExtra(StaticResources.EXTRA_STATE_CONNECTION).equals(StaticResources.STATE_DISCONNECTED)){
                         connectedToGatt = false;
+                        invalidateOptionsMenu();
                         connectionState.setTextColor(Color.RED);
                         connectionState.setText(intent.getStringExtra(StaticResources.EXTRA_STATE_CONNECTION));
                     }
@@ -222,12 +226,12 @@ public class SensorsInfo extends AppCompatActivity {
         connectionState.setText("Disconnected");
     }
 
-    //this method prints all the info about the device connected to on a terminal-like TextView
+    /*//this method prints all the info about the device connected to on a terminal-like TextView
     void printOnTerminal(Intent intent) {
         String serviceUUID = "Service UUID: " + intent.getStringExtra(StaticResources.EXTRA_TERMINAL_SERVICE);
         String charUUID = "Characteristics UUID: " + intent.getStringExtra(StaticResources.EXTRA_TERMINAL_CHARACTERISTIC_TEMP) + '\n' +
                                                      intent.getStringExtra(StaticResources.EXTRA_TERMINAL_CHARACTERISTIC_HEART);
         String toPrint = serviceUUID + '\n' + charUUID;
         ///terminal.setText(toPrint);
-    }
+    }*/
 }

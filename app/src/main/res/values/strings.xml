@@ -22,6 +22,6 @@
     <string name="menu_connect">CONNECT</string>
     <string name="menu_disconnect">DISCONNECT</string>
     <string name="toolbar_sensors_rssi">RSSI Graph</string>
-    <string name="toolbar_sensors_mqtt">Send Data</string>
+    <string name="toolbar_sensors_mqtt">Send Data To Cloud</string>
 
 </resources>

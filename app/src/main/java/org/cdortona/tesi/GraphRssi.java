@@ -20,6 +20,14 @@ import com.jjoe64.graphview.Viewport;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
+/**
+ * Cristian D'Ortona
+ *
+ * TESI DI LAUREA IN INGEGNERIA ELETTRONICA E DELLE TELECOMUNICAZIONI
+ *
+ */
+
+
 public class GraphRssi extends AppCompatActivity {
 
     static final String TAG = "GraphRssi";
@@ -91,7 +99,7 @@ public class GraphRssi extends AppCompatActivity {
         } catch (InterruptedException e){
             e.printStackTrace();
         }*/
-        Log.d(TAG, result.getDevice().getAddress());
+        Log.d(TAG, "Result from scan: " + result.getDevice().getAddress() + ", chosen address: " + deviceAddress);
         if(result.getDevice().getAddress().equals(deviceAddress)){
             Log.d(TAG, "Device found: " + result.getDevice().getName() + ", updating RSSI");
             series.appendData(new DataPoint(xAxis,result.getRssi()), true, 20);

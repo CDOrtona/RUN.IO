@@ -132,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             case (R.id.action_about):
                 Intent aboutWebView = new Intent(MainActivity.this, AboutWebView.class);
-                aboutWebView.putExtra(StaticResources.WEB_PAGE, "https://github.com/CDOrtona");
+                aboutWebView.putExtra(StaticResources.WEB_PAGE, "https://github.com/CDOrtona/Tesi");
                 startActivity(aboutWebView);
                 return true;
             default:
@@ -256,6 +256,7 @@ public class MainActivity extends AppCompatActivity {
                     scanning = false;
                     //this's going to stop the scan if the user doesn't stop it manually before SCAN_PERIOD
                     stopScan();
+                    invalidateOptionsMenu();
                 }
             }, SCAN_PERIOD);
             scanning = true;

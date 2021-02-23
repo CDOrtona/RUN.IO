@@ -19,6 +19,7 @@
 
     <item android:id="@+id/action_mqtt"
         android:title="@string/toolbar_sensors_mqtt"
-        app:showAsAction="never"/>
+        app:showAsAction="never"
+        android:enabled="false"/>
 
 </menu>

@@ -56,6 +56,8 @@ class ConnectToGattServer {
             BluetoothDevice bleAdvertiser = bluetoothAdapter.getRemoteDevice(deviceAddress);
             Log.d("connectToGatt", "found device with the following MAC address: " + deviceAddress);
             //this method is gonna connect to the remote GATT server and the result will be handled by the callBack method
+            //the auto-connect is set to true, which means the phone will automatically connect to the remote device when nearby
+            //the auto-connect only works if the device is bounded to the gatt server, hence only if there is a secure connection between the two parties
             gatt = bleAdvertiser.connectGatt(mContext, true, gattCallBack);
         } catch(IllegalArgumentException e){
             e.getStackTrace();

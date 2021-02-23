@@ -119,6 +119,7 @@
                     android:padding="30dp"
                     android:gravity="center"
                     android:text=""
+                    android:hint="null"
                     android:textColor="@color/primary_text" />
 
                 <!--HeartBeat-->
@@ -152,6 +153,7 @@
                     android:drawablePadding="20sp"
                     android:gravity="center"
                     android:text=""
+                    android:hint="null"
                     android:textColor="@color/primary_text" />
 
                 <!--Brightness-->
@@ -185,6 +187,7 @@
                     android:drawablePadding="20dp"
                     android:gravity="center"
                     android:text=""
+                    android:hint="null"
                     android:textColor="@color/primary_text" />
 
                 <!--Position-->
@@ -218,6 +221,7 @@
                     android:drawablePadding="20sp"
                     android:gravity="center"
                     android:text=""
+                    android:hint="null"
                     android:textColor="@color/primary_text" />
 
             </RelativeLayout>
