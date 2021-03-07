@@ -250,6 +250,7 @@ public class MainActivity extends AppCompatActivity {
             //the handler is used to schedule an event to happen at some point in the future
             //in this case the method postDelayed causes the runnable to be added to the message queue
             // and it will be executed(run) after a given time SCAN_PERIOD
+            //Handler(Runnable runnable, long delay)
             new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                 @Override
                 public void run() {

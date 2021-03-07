@@ -28,6 +28,12 @@ public class DevicesScannedModel {
         this.bondState = bondState;
     }
 
+    //this associates the RSSI value to the address respectively
+    DevicesScannedModel(String address, int rssi){
+        this.address = address;
+        this.rssi = rssi;
+    }
+
     String getDeviceName(){
         return this.deviceName;
     }
