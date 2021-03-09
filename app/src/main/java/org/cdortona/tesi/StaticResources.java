@@ -20,7 +20,7 @@ class StaticResources {
     //Indicate or Notify property of that specified characteristic
     static final String ESP32_DESCRIPTOR = "00002902-0000-1000-8000-00805f9b34fb";
 
-    //Broadcaster Intent Filters
+    //Broadcaster Intent Actions what will be received by the broadcast receiver
     static final String BROADCAST_CONNECTION_STATE = PACKAGE_NAME + ".connectionState";
     static final String BROADCAST_ESP32_INFO =  PACKAGE_NAME + ".serviceFound";
     static final String BROADCAST_CHARACTERISTIC_CHANGED = PACKAGE_NAME + ".characteristicChanged";
@@ -28,11 +28,8 @@ class StaticResources {
 
     //Keys for the putExtra method
     static final String EXTRA_STATE_CONNECTION = "keyConnection";
-    static final String EXTRA_TEMP_VALUE = "tempValue";
-    static final String EXTRA_HEART_VALUE = "heartValue";
-    static final String EXTRA_TERMINAL_SERVICE = "terminalService";
-    static final String EXTRA_TERMINAL_CHARACTERISTIC_TEMP = "terminalCharacteristicTemp";
-    static final String EXTRA_TERMINAL_CHARACTERISTIC_HEART = "terminalCharacteristicHeart";
+    static final String EXTRA_CHARACTERISTIC_VALUE_READ = "charReadValue";
+    static final String EXTRA_CHARACTERISTIC_NOTIFIED = "characteristicToBeNotified";
 
     //values for the putExtra method
     static final String STATE_CONNECTED = "Connected";

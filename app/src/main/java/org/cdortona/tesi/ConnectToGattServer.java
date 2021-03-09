@@ -9,13 +9,11 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 import android.widget.Toast;
 
-import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.UUID;
 
@@ -43,7 +41,7 @@ class ConnectToGattServer {
     //Constructor which initializes the dependencies needed for the connection to the GATT server of the remote device(ESP32)
     ConnectToGattServer(String deviceAddress, Context context){
         mContext = context;
-        final BluetoothManager bluetoothManager =(BluetoothManager) context.getSystemService(context.BLUETOOTH_SERVICE);
+        final BluetoothManager bluetoothManager =(BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
         bluetoothAdapter = bluetoothManager.getAdapter();
         //connectToGatt(deviceAddress);
     }
@@ -55,6 +53,8 @@ class ConnectToGattServer {
         try {
             BluetoothDevice bleAdvertiser = bluetoothAdapter.getRemoteDevice(deviceAddress);
             Log.d("connectToGatt", "found device with the following MAC address: " + deviceAddress);
+            //this creates a bond with the remote device once the connection is set
+            bleAdvertiser.createBond();
             //this method is gonna connect to the remote GATT server and the result will be handled by the callBack method
             //the auto-connect is set to true, which means the phone will automatically connect to the remote device when nearby
             //the auto-connect only works if the device is bounded to the gatt server, hence only if there is a secure connection between the two parties
@@ -75,6 +75,7 @@ class ConnectToGattServer {
         }
     }
 
+    //anonymous inner class
     private BluetoothGattCallback gattCallBack = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
@@ -106,7 +107,6 @@ class ConnectToGattServer {
             gattCharacteristicsList = gattService.getCharacteristics();
 
             Intent intent = new Intent(StaticResources.BROADCAST_ESP32_INFO);
-            intent.putExtra(StaticResources.EXTRA_TERMINAL_SERVICE, gattService.getUuid().toString());
 
             //debug
             for(int i=1; i<gattServicesList.size(); i++){
@@ -114,8 +114,6 @@ class ConnectToGattServer {
             }
 
             assignCharacteristics(gattCharacteristicsList);
-            intent.putExtra(StaticResources.EXTRA_TERMINAL_CHARACTERISTIC_TEMP, gattCharacteristicTemp.getUuid().toString());
-            intent.putExtra(StaticResources.EXTRA_TERMINAL_CHARACTERISTIC_HEART, gattCharacteristicHearth.getUuid().toString());
             mContext.sendBroadcast(intent);
 
             //this works if I'm not using notify property
@@ -134,8 +132,8 @@ class ConnectToGattServer {
             String message = new String(rawData);
 
             System.out.println("output: " + message + '\n');
-            //this is printing to terminal now, it'll need to be changed
-            intent.putExtra(StaticResources.EXTRA_TEMP_VALUE, message);
+
+            intent.putExtra(StaticResources.EXTRA_CHARACTERISTIC_VALUE_READ, message);
             mContext.sendBroadcast(intent);
         }
 
@@ -148,6 +146,9 @@ class ConnectToGattServer {
             Log.d("onCharacteristicChanged", "method has been called");
             super.onCharacteristicChanged(gatt, characteristic);
             Intent intent = new Intent(StaticResources.BROADCAST_CHARACTERISTIC_CHANGED);
+            //I'm assigning to the intend the UUID of the characteristic that has changed
+            //the activity that receives this broadcast will then know which is the characteristic that has changed
+            intent.putExtra(StaticResources.EXTRA_CHARACTERISTIC_NOTIFIED, characteristic.getUuid().toString());
             gatt.readCharacteristic(characteristic);
             mContext.sendBroadcast(intent);
         }

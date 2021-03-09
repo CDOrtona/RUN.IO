@@ -8,7 +8,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -16,9 +15,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.Objects;
 
 /**
  * Cristian D'Ortona
@@ -30,12 +30,19 @@ import android.widget.Toast;
 
 public class SensorsInfo extends AppCompatActivity {
 
+    private final String TAG = "SensorInfo";
+
     //I initialize an object from the class ConnectToGattServer which handles the connection to the GATT server of the ESP32
     ConnectToGattServer connectToGattServer;
 
+    //GATT
     String deviceAddress;
     String deviceName;
     boolean connectedToGatt = false;
+
+    //flags used to tell which characteristic has changed
+    boolean tempChanged = false;
+    boolean heartChanged = false;
 
     //TextView objects
     ///TextView terminal;
@@ -95,7 +102,7 @@ public class SensorsInfo extends AppCompatActivity {
         //Toolbar
         toolbar = findViewById(R.id.toolbar_sensors);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
     }
 
@@ -175,34 +182,47 @@ public class SensorsInfo extends AppCompatActivity {
             switch (broadcastReceived) {
 
                 case StaticResources.BROADCAST_CONNECTION_STATE:
-                    if(intent.getStringExtra(StaticResources.EXTRA_STATE_CONNECTION).equals(StaticResources.STATE_CONNECTED)) {
+                    if (intent.getStringExtra(StaticResources.EXTRA_STATE_CONNECTION).equals(StaticResources.STATE_CONNECTED)) {
                         connectedToGatt = true;
                         invalidateOptionsMenu();
                         connectionState.setTextColor(Color.GREEN);
                         connectionState.setText(intent.getStringExtra(StaticResources.EXTRA_STATE_CONNECTION));
-                    }
-                    else if(intent.getStringExtra(StaticResources.EXTRA_STATE_CONNECTION).equals(StaticResources.STATE_DISCONNECTED)){
+                    } else if (intent.getStringExtra(StaticResources.EXTRA_STATE_CONNECTION).equals(StaticResources.STATE_DISCONNECTED)) {
                         connectedToGatt = false;
                         invalidateOptionsMenu();
                         connectionState.setTextColor(Color.RED);
                         connectionState.setText(intent.getStringExtra(StaticResources.EXTRA_STATE_CONNECTION));
                     }
-                        break;
+                    break;
                 case StaticResources.BROADCAST_CHARACTERISTIC_READ:
-                    if(connectedToGatt = true){
-                        String tempRead = intent.getStringExtra(StaticResources.EXTRA_TEMP_VALUE);
+                    if (tempChanged && !heartChanged) {
+                        String tempRead = intent.getStringExtra(StaticResources.EXTRA_CHARACTERISTIC_VALUE_READ);
                         tempValue.setText(tempRead);
-                        ///terminal.setText("");
-                        ///terminal.setText(temp_value);
-                    } else {
-                        //hard coded
-                        ///terminal.setText("No data available");
+                    }
+                    else if (!tempChanged && heartChanged){
+                        String heartRead  = intent.getStringExtra(StaticResources.EXTRA_CHARACTERISTIC_VALUE_READ);
+                        heartValue.setText(heartRead);
+                    }
+                    else {
+                        Log.d(TAG, "unknown state");
                     }
                     break;
-                /*case StaticResources.BROADCAST_ESP32_INFO:
-                    printOnTerminal(intent);
-                    break;*/
+                //this received broadcast lets the activity that subbed to this intent filter know which is the characteristic that has changed
+                case StaticResources.BROADCAST_CHARACTERISTIC_CHANGED:
+                    String notifiedCharacteristic = intent.getStringExtra(StaticResources.EXTRA_CHARACTERISTIC_NOTIFIED);
+                    Log.d(TAG, "Characteristic notified: " + notifiedCharacteristic);
+                    if (notifiedCharacteristic.equals(StaticResources.ESP32_TEMP_CHARACTERISTIC)) {
+                        Log.d(TAG, "Characteristic is Temp");
+                        tempChanged = true;
+                        heartChanged = false;
+                    } else if (notifiedCharacteristic.equals(StaticResources.ESP32_HEARTH_CHARACTERISTIC)) {
+                        tempChanged = false;
+                        heartChanged = true;
+                        Log.d(TAG, "Characteristic is Heart");
+                    }
+                    break;
             }
+
         }
     };
 
