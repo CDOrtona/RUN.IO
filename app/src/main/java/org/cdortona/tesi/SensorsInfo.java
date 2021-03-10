@@ -51,7 +51,7 @@ public class SensorsInfo extends AppCompatActivity {
     TextView connectionState;
     TextView tempValue;
     TextView heartValue;
-    TextView brightness;
+    TextView brightnessValue;
     TextView position;
 
     //Toolbar
@@ -69,7 +69,7 @@ public class SensorsInfo extends AppCompatActivity {
         connectionState = findViewById(R.id.connection_state_textView);
         tempValue = findViewById(R.id.textView_temp);
         heartValue = findViewById(R.id.textView_heart);
-        brightness = findViewById(R.id.textView_brightness);
+        brightnessValue = findViewById(R.id.textView_header_brightness);
         position = findViewById(R.id.textView_position);
 
         //I have to retrieve the info from the Intent which called this activity
@@ -93,10 +93,8 @@ public class SensorsInfo extends AppCompatActivity {
 
         //here I'm specifying the intent filters I want to subscribe to in order to get their updates
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(StaticResources.BROADCAST_CONNECTION_STATE);
-        intentFilter.addAction(StaticResources.BROADCAST_CHARACTERISTIC_CHANGED);
-        intentFilter.addAction(StaticResources.BROADCAST_CHARACTERISTIC_READ);
-        intentFilter.addAction(StaticResources.BROADCAST_ESP32_INFO);
+        intentFilter.addAction(StaticResources.ACTION_CONNECTION_STATE);
+        intentFilter.addAction(StaticResources.ACTION_CHARACTERISTIC_CHANGED_READ);
         registerReceiver(bleBroadcastReceiver, intentFilter);
 
         //Toolbar
@@ -181,7 +179,7 @@ public class SensorsInfo extends AppCompatActivity {
 
             switch (broadcastReceived) {
 
-                case StaticResources.BROADCAST_CONNECTION_STATE:
+                case StaticResources.ACTION_CONNECTION_STATE:
                     if (intent.getStringExtra(StaticResources.EXTRA_STATE_CONNECTION).equals(StaticResources.STATE_CONNECTED)) {
                         connectedToGatt = true;
                         invalidateOptionsMenu();
@@ -194,22 +192,9 @@ public class SensorsInfo extends AppCompatActivity {
                         connectionState.setText(intent.getStringExtra(StaticResources.EXTRA_STATE_CONNECTION));
                     }
                     break;
-                case StaticResources.BROADCAST_CHARACTERISTIC_READ:
-                    if (tempChanged) {
-                        String tempRead = intent.getStringExtra(StaticResources.EXTRA_CHARACTERISTIC_VALUE_READ);
-                        tempValue.setText(tempRead);
-                    }
-                    else if (heartChanged){
-                        String heartRead  = intent.getStringExtra(StaticResources.EXTRA_CHARACTERISTIC_VALUE_READ);
-                        heartValue.setText(heartRead);
-                    }
-                    else {
-                        Log.d(TAG, "unknown state");
-                    }
-                    break;
                 //this received broadcast lets the activity that subbed to this intent filter know which is the characteristic that has changed
-                case StaticResources.BROADCAST_CHARACTERISTIC_CHANGED:
-                    String notifiedCharacteristic = intent.getStringExtra(StaticResources.EXTRA_CHARACTERISTIC_NOTIFIED);
+                case StaticResources.ACTION_CHARACTERISTIC_CHANGED_READ:
+                    /*String notifiedCharacteristic = intent.getStringExtra(StaticResources.EXTRA_CHARACTERISTIC_NOTIFIED);
                     Log.d(TAG, "Characteristic notified: " + notifiedCharacteristic);
                     if (notifiedCharacteristic.equals(StaticResources.ESP32_TEMP_CHARACTERISTIC)) {
                         Log.d(TAG, "Characteristic is Temp");
@@ -220,7 +205,13 @@ public class SensorsInfo extends AppCompatActivity {
                         heartChanged = true;
                         Log.d(TAG, "Characteristic is Heart");
                     }
-                    break;
+                    break;*/
+                    String onUpdateTempValue = intent.getStringExtra(StaticResources.EXTRA_TEMP_VALUE);
+                    String onUpdateHeartValue = intent.getStringExtra(StaticResources.EXTRA_HEART_VALUE);
+                    String onUpdateBrigthnessValue = intent.getStringExtra(StaticResources.EXTRA_BRIGHTNESS_VALUE);
+                    tempValue.setText(onUpdateTempValue);
+                    heartValue.setText(onUpdateHeartValue);
+                    brightnessValue.setText(onUpdateBrigthnessValue);
             }
 
         }
@@ -245,13 +236,4 @@ public class SensorsInfo extends AppCompatActivity {
         connectionState.setTextColor(Color.RED);
         connectionState.setText("Disconnected");
     }
-
-    /*//this method prints all the info about the device connected to on a terminal-like TextView
-    void printOnTerminal(Intent intent) {
-        String serviceUUID = "Service UUID: " + intent.getStringExtra(StaticResources.EXTRA_TERMINAL_SERVICE);
-        String charUUID = "Characteristics UUID: " + intent.getStringExtra(StaticResources.EXTRA_TERMINAL_CHARACTERISTIC_TEMP) + '\n' +
-                                                     intent.getStringExtra(StaticResources.EXTRA_TERMINAL_CHARACTERISTIC_HEART);
-        String toPrint = serviceUUID + '\n' + charUUID;
-        ///terminal.setText(toPrint);
-    }*/
 }

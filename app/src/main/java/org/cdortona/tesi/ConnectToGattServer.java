@@ -76,27 +76,22 @@ class ConnectToGattServer {
     }
 
     //anonymous inner class
-    private BluetoothGattCallback gattCallBack = new BluetoothGattCallback() {
+    private final BluetoothGattCallback gattCallBack = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             super.onConnectionStateChange(gatt, status, newState);
             //I'm creating an intent which contains the intent-filter used to identify the connection state of the GATT server
-            Intent intent = new Intent(StaticResources.BROADCAST_CONNECTION_STATE);
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 Log.d("onConnectionStateChange", "connected to Bluetooth successfully");
-                intent.putExtra(StaticResources.EXTRA_STATE_CONNECTION, StaticResources.STATE_CONNECTED);
                 discoverServicesDelay(gatt);
+                updateBroadcast(StaticResources.EXTRA_STATE_CONNECTION, StaticResources.STATE_CONNECTED);
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 Log.d("onConnectionStateChange", "disconnecting GATT server");
-                intent.putExtra(StaticResources.EXTRA_STATE_CONNECTION, StaticResources.STATE_DISCONNECTED);
                 disconnectGattServer();
+                updateBroadcast(StaticResources.EXTRA_STATE_CONNECTION, StaticResources.STATE_DISCONNECTED);
             } else if(newState == BluetoothProfile.STATE_CONNECTING){
                 Log.d("onConnectionStateChange", "Connecting...");
             }
-            //I'm broadcasting the intent to the class which subscribed to receive them
-            //that class has to define which are the intent filters it wants to subscribe to in order to get the updates
-            //this works similarly to a publish-subscribe pattern
-            mContext.sendBroadcast(intent);
         }
 
         @Override
@@ -106,35 +101,12 @@ class ConnectToGattServer {
             gattService = gatt.getService(UUID.fromString(StaticResources.ESP32_SERVICE));
             gattCharacteristicsList = gattService.getCharacteristics();
 
-            Intent intent = new Intent(StaticResources.BROADCAST_ESP32_INFO);
-
             //debug
             for(int i=1; i<gattServicesList.size(); i++){
                 Log.i("onServicesDiscovered", "I'm printing the list of the services:" + gattServicesList.get(i).getUuid().toString() + '\n');
             }
 
             assignCharacteristics(gattCharacteristicsList);
-            mContext.sendBroadcast(intent);
-
-            //this works if I'm not using notify property
-            //this is an asynchronous operation and the result is reported by the callBack method onCharacteristicRead
-            //Log.d("onServiceDiscovered", "started characteristic reading...");
-            //gatt.readCharacteristic(gattCharacteristicTemp);
-        }
-
-        @Override
-        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            super.onCharacteristicRead(gatt, characteristic, status);
-            Intent intent = new Intent(StaticResources.BROADCAST_CHARACTERISTIC_READ);
-            //right now the temperature is a string because the physical sensor hasn't been implemented yet
-            //and I'm using the serialMonitor to send strings
-            byte[] rawData = characteristic.getValue();
-            String message = new String(rawData);
-
-            System.out.println("output: " + message + '\n');
-
-            intent.putExtra(StaticResources.EXTRA_CHARACTERISTIC_VALUE_READ, message);
-            mContext.sendBroadcast(intent);
         }
 
         //this method works if the GATT server has one or more characteristic with the property NOTIFY or INDICATE
@@ -145,12 +117,8 @@ class ConnectToGattServer {
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             Log.d("onCharacteristicChanged", "method has been called");
             super.onCharacteristicChanged(gatt, characteristic);
-            Intent intent = new Intent(StaticResources.BROADCAST_CHARACTERISTIC_CHANGED);
-            //I'm assigning to the intend the UUID of the characteristic that has changed
-            //the activity that receives this broadcast will then know which is the characteristic that has changed
-            intent.putExtra(StaticResources.EXTRA_CHARACTERISTIC_NOTIFIED, characteristic.getUuid().toString());
-            gatt.readCharacteristic(characteristic);
-            mContext.sendBroadcast(intent);
+
+            sensorValueBroadcast(characteristic);
         }
     };
 
@@ -167,30 +135,55 @@ class ConnectToGattServer {
         }
     }
 
+    private void updateBroadcast(String key, String value){
+        Intent intent = new Intent(StaticResources.ACTION_CONNECTION_STATE);
+        intent.putExtra(key, value);
+        mContext.sendBroadcast(intent);
+    }
+
+    private void sensorValueBroadcast(BluetoothGattCharacteristic characteristic){
+        Intent intent = new Intent(StaticResources.ACTION_CHARACTERISTIC_CHANGED_READ);
+        switch (characteristic.getUuid().toString()){
+            case StaticResources.ESP32_TEMP_CHARACTERISTIC:
+                byte[] tempData = characteristic.getValue();
+                String tempMessage = new String(tempData);
+                intent.putExtra(StaticResources.EXTRA_TEMP_VALUE, tempMessage);
+                mContext.sendBroadcast(intent);
+                break;
+            case StaticResources.ESP32_HEARTH_CHARACTERISTIC:
+                byte[] heartRate = characteristic.getValue();
+                String heartMessage = new String(heartRate);
+                intent.putExtra(StaticResources.EXTRA_HEART_VALUE, heartMessage);
+                mContext.sendBroadcast(intent);
+                break;
+            case StaticResources.ESP32_BRIGHTNESS_CHARACTERISTIC:
+                byte[] brightnessData = characteristic.getValue();
+                String brightnessMessage = new String(brightnessData);
+                intent.putExtra(StaticResources.EXTRA_BRIGHTNESS_VALUE, brightnessMessage);
+                mContext.sendBroadcast(intent);
+                break;
+        }
+    }
+
     //this method is used to find the predefined characteristics and then assign them to their BluetoothGattCharacteristic objects
     private void assignCharacteristics(List<BluetoothGattCharacteristic> foundCharacteristics){
+
         for(int i=0; i<foundCharacteristics.size(); i++){
+
             switch(foundCharacteristics.get(i).getUuid().toString()) {
                 case StaticResources.ESP32_TEMP_CHARACTERISTIC:
                     gattCharacteristicTemp = foundCharacteristics.get(i);
-                    gatt.setCharacteristicNotification(gattCharacteristicTemp, true);
-                    //in order to use the notify property of the characteristic, a descriptor has been defined which lets the client
-                    //decide whether enabling the notify property of the GATT server characteristic or not
-                    // but setting CCCD value is the only way you can tell the API whether you are going to turn on notification
-                    BluetoothGattDescriptor descriptor = gattCharacteristicTemp.getDescriptor(UUID.fromString(StaticResources.ESP32_DESCRIPTOR));
-                    descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-                    gatt.writeDescriptor(descriptor);
                     Log.d("assignCharacteristics" , "charactersitic has been assigned correctly, " +
                             + '\n' + "UUID: " + foundCharacteristics.get(i).getUuid());
+
+                    setCharacteristicNotification(foundCharacteristics.get(i));
                     break;
                 case StaticResources.ESP32_HEARTH_CHARACTERISTIC:
                     gattCharacteristicHearth = foundCharacteristics.get(i);
-                    gatt.setCharacteristicNotification(gattCharacteristicHearth, true);
-                    BluetoothGattDescriptor descriptor1 = gattCharacteristicHearth.getDescriptor(UUID.fromString(StaticResources.ESP32_DESCRIPTOR));
-                    descriptor1.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-                    gatt.writeDescriptor(descriptor1);
                     Log.d("assignCharacteristics" , "charactersitic has been assigned correctly, " +
                             + '\n' + "UUID: " + foundCharacteristics.get(i).getUuid());
+
+                    setCharacteristicNotification(foundCharacteristics.get(i));
                     break;
                 default:
                     //this happens when there is a characteristic in the service that isn't part of the predefined ones
@@ -199,5 +192,15 @@ class ConnectToGattServer {
                     break;
             }
         }
+    }
+
+    //in order to use the notify property of the characteristic, a descriptor has been defined which lets the client
+    //decide whether enabling the notify property of the GATT server characteristic or not
+    // but setting CCCD value is the only way you can tell the API whether you are going to turn on notification
+    private void setCharacteristicNotification(BluetoothGattCharacteristic characteristic){
+        gatt.setCharacteristicNotification(characteristic, true);
+        BluetoothGattDescriptor descriptor = characteristic.getDescriptor(characteristic.getUuid());
+        gatt.writeDescriptor(descriptor);
+        Log.d("setNotification", "Notification Enabled");
     }
 }

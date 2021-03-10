@@ -159,7 +159,7 @@
                 <!--Brightness-->
 
                 <TextView
-                    android:id="@+id/textView_brightness"
+                    android:id="@+id/textView_header_brightness"
                     android:layout_width="160dp"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/textView_temp"
@@ -173,10 +173,10 @@
                     android:textSize="18sp" />
 
                 <TextView
-                    android:id="@+id/textView_header_brightness"
+                    android:id="@+id/textView_brightnes"
                     android:layout_width="160dp"
                     android:layout_height="160dp"
-                    android:layout_below="@id/textView_brightness"
+                    android:layout_below="@id/textView_header_brightness"
                     android:layout_alignParentEnd="true"
                     android:layout_marginStart="10sp"
                     android:layout_marginTop="1dp"
