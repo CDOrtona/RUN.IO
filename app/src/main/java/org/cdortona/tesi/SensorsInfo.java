@@ -238,8 +238,8 @@ public class SensorsInfo extends AppCompatActivity {
             locationProviderClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
                 @Override
                 public void onSuccess(Location location) {
-                    String position = "Lo: " +  String.valueOf(location.getLongitude()) + '\n' + '\n'
-                            + "La: " + String.valueOf(location.getLatitude());
+                    String position = "Lo: " + location.getLongitude() + '\n' + '\n'
+                            + "La: " + location.getLatitude();
                     positionValue.setText(position);
                 }
             });

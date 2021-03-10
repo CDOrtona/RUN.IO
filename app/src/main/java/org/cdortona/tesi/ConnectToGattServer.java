@@ -36,6 +36,7 @@ class ConnectToGattServer {
     private List<BluetoothGattService> gattServicesList;
     private BluetoothGattCharacteristic gattCharacteristicTemp;
     private BluetoothGattCharacteristic gattCharacteristicHearth;
+    private BluetoothGattCharacteristic gattCharacteristicBrightness;
     private List<BluetoothGattCharacteristic> gattCharacteristicsList;
 
     //Constructor which initializes the dependencies needed for the connection to the GATT server of the remote device(ESP32)
@@ -185,6 +186,13 @@ class ConnectToGattServer {
 
                     setCharacteristicNotification(foundCharacteristics.get(i));
                     break;
+                case StaticResources.ESP32_BRIGHTNESS_CHARACTERISTIC:
+                    gattCharacteristicBrightness = foundCharacteristics.get(i);
+                    Log.d("assignCharacteristics" , "charactersitic has been assigned correctly, " +
+                            + '\n' + "UUID: " + foundCharacteristics.get(i).getUuid());
+
+                    setCharacteristicNotification(foundCharacteristics.get(i));
+                    break;
                 default:
                     //this happens when there is a characteristic in the service that isn't part of the predefined ones
                     Log.d("assignCharacteristics", "Characteristic not listed in the predefined ones"
@@ -199,7 +207,8 @@ class ConnectToGattServer {
     // but setting CCCD value is the only way you can tell the API whether you are going to turn on notification
     private void setCharacteristicNotification(BluetoothGattCharacteristic characteristic){
         gatt.setCharacteristicNotification(characteristic, true);
-        BluetoothGattDescriptor descriptor = characteristic.getDescriptor(characteristic.getUuid());
+        BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUID.fromString(StaticResources.ESP32_DESCRIPTOR));
+        descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
         gatt.writeDescriptor(descriptor);
         Log.d("setNotification", "Notification Enabled");
     }
