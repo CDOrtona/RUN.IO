@@ -173,7 +173,7 @@
                     android:textSize="18sp" />
 
                 <TextView
-                    android:id="@+id/textView_brightnes"
+                    android:id="@+id/textView_brightness"
                     android:layout_width="160dp"
                     android:layout_height="160dp"
                     android:layout_below="@id/textView_header_brightness"
@@ -193,7 +193,7 @@
                 <!--Position-->
 
                 <TextView
-                    android:id="@+id/textView_position"
+                    android:id="@+id/textView_header_position"
                     android:layout_width="160dp"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/textView_heart"
@@ -207,7 +207,7 @@
                     android:textSize="18sp" />
 
                 <TextView
-                    android:id="@+id/textView_header_position"
+                    android:id="@+id/textView_position"
                     android:layout_width="160dp"
                     android:layout_height="160dp"
                     android:layout_alignParentEnd="true"

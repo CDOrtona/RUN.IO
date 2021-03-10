@@ -84,11 +84,11 @@ class ConnectToGattServer {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 Log.d("onConnectionStateChange", "connected to Bluetooth successfully");
                 discoverServicesDelay(gatt);
-                updateBroadcast(StaticResources.EXTRA_STATE_CONNECTION, StaticResources.STATE_CONNECTED);
+                updateBroadcast(StaticResources.STATE_CONNECTED);
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 Log.d("onConnectionStateChange", "disconnecting GATT server");
                 disconnectGattServer();
-                updateBroadcast(StaticResources.EXTRA_STATE_CONNECTION, StaticResources.STATE_DISCONNECTED);
+                updateBroadcast(StaticResources.STATE_DISCONNECTED);
             } else if(newState == BluetoothProfile.STATE_CONNECTING){
                 Log.d("onConnectionStateChange", "Connecting...");
             }
@@ -135,9 +135,9 @@ class ConnectToGattServer {
         }
     }
 
-    private void updateBroadcast(String key, String value){
+    private void updateBroadcast(String value){
         Intent intent = new Intent(StaticResources.ACTION_CONNECTION_STATE);
-        intent.putExtra(key, value);
+        intent.putExtra(StaticResources.EXTRA_STATE_CONNECTION, value);
         mContext.sendBroadcast(intent);
     }
 

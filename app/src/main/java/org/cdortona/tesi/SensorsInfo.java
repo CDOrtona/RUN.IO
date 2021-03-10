@@ -3,13 +3,17 @@ package org.cdortona.tesi;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -17,6 +21,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.Objects;
 
@@ -44,15 +52,16 @@ public class SensorsInfo extends AppCompatActivity {
     boolean tempChanged = false;
     boolean heartChanged = false;
 
-    //TextView objects
-    ///TextView terminal;
     TextView addressInfo;
     TextView nameInfo;
     TextView connectionState;
     TextView tempValue;
     TextView heartValue;
     TextView brightnessValue;
-    TextView position;
+    TextView positionValue;
+
+    //location
+    FusedLocationProviderClient locationProviderClient;
 
     //Toolbar
     Toolbar toolbar;
@@ -63,14 +72,13 @@ public class SensorsInfo extends AppCompatActivity {
         setContentView(R.layout.activity_sensors_info);
 
         //UI setup
-        ///*terminal = findViewById(R.id.terminal_textView);
         addressInfo = findViewById(R.id.address_textView);
         nameInfo = findViewById(R.id.name_textView);
         connectionState = findViewById(R.id.connection_state_textView);
         tempValue = findViewById(R.id.textView_temp);
         heartValue = findViewById(R.id.textView_heart);
-        brightnessValue = findViewById(R.id.textView_header_brightness);
-        position = findViewById(R.id.textView_position);
+        brightnessValue = findViewById(R.id.textView_brightness);
+        positionValue = findViewById(R.id.textView_position);
 
         //I have to retrieve the info from the Intent which called this activity
         Intent receivedIntent = getIntent();
@@ -83,13 +91,15 @@ public class SensorsInfo extends AppCompatActivity {
         addressInfo.setText(deviceAddress);
         nameInfo.setTypeface(Typeface.SANS_SERIF);
         nameInfo.setText(deviceName);
-        ///terminal.setText("");
         //hard coded, I must change it later
         connectionState.setTextColor(Color.RED);
         connectionState.setText("Disconnected");
 
         //calling the constructor in order to build a BluetoothAdaptor object
         connectToGattServer = new ConnectToGattServer(deviceAddress, this);
+
+        //location
+        locationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
         //here I'm specifying the intent filters I want to subscribe to in order to get their updates
         IntentFilter intentFilter = new IntentFilter();
@@ -150,6 +160,7 @@ public class SensorsInfo extends AppCompatActivity {
             menu.findItem(R.id.action_connect).setVisible(false);
             menu.findItem(R.id.action_disconnect).setVisible(true);
             menu.findItem(R.id.action_mqtt).setEnabled(true);
+            accessLocation();
             return true;
         }
         else if(!connectedToGatt){
@@ -208,14 +219,32 @@ public class SensorsInfo extends AppCompatActivity {
                     break;*/
                     String onUpdateTempValue = intent.getStringExtra(StaticResources.EXTRA_TEMP_VALUE);
                     String onUpdateHeartValue = intent.getStringExtra(StaticResources.EXTRA_HEART_VALUE);
-                    String onUpdateBrigthnessValue = intent.getStringExtra(StaticResources.EXTRA_BRIGHTNESS_VALUE);
+                    String onUpdateBrightnessValue = intent.getStringExtra(StaticResources.EXTRA_BRIGHTNESS_VALUE);
                     tempValue.setText(onUpdateTempValue);
                     heartValue.setText(onUpdateHeartValue);
-                    brightnessValue.setText(onUpdateBrigthnessValue);
+                    brightnessValue.setText(onUpdateBrightnessValue);
             }
 
         }
     };
+
+    private void accessLocation(){
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 2);
+            Log.d(TAG, "Location permission disabled, sent request permission activation dialog");
+        }
+        else {
+            Log.d(TAG, "Location permission enabled");
+            locationProviderClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                @Override
+                public void onSuccess(Location location) {
+                    String position = "Lo: " +  String.valueOf(location.getLongitude()) + '\n' + '\n'
+                            + "La: " + String.valueOf(location.getLatitude());
+                    positionValue.setText(position);
+                }
+            });
+        }
+    }
 
     //add an if that checks if the adaptor is connected to the GATT server already
     public void connectToGatt() {
@@ -232,8 +261,9 @@ public class SensorsInfo extends AppCompatActivity {
     public void disconnectFromGatt() {
         connectToGattServer.disconnectGattServer();
         connectedToGatt = false;
-        ///terminal.setText("");
         connectionState.setTextColor(Color.RED);
         connectionState.setText("Disconnected");
+        //this is gonna flush the location stored in the location variable
+        locationProviderClient.flushLocations();
     }
 }
