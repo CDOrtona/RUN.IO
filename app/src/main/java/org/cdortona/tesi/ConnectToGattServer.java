@@ -54,7 +54,7 @@ class ConnectToGattServer {
             BluetoothDevice bleAdvertiser = bluetoothAdapter.getRemoteDevice(deviceAddress);
             Log.d("connectToGatt", "found device with the following MAC address: " + deviceAddress);
             //this creates a bond with the remote device once the connection is set
-            bleAdvertiser.createBond();
+            //bleAdvertiser.createBond();
             //this method is gonna connect to the remote GATT server and the result will be handled by the callBack method
             //the auto-connect is set to true, which means the phone will automatically connect to the remote device when nearby
             //the auto-connect only works if the device is bounded to the gatt server, hence only if there is a secure connection between the two parties
@@ -176,6 +176,7 @@ class ConnectToGattServer {
                     gatt.setCharacteristicNotification(gattCharacteristicTemp, true);
                     //in order to use the notify property of the characteristic, a descriptor has been defined which lets the client
                     //decide whether enabling the notify property of the GATT server characteristic or not
+                    // but setting CCCD value is the only way you can tell the API whether you are going to turn on notification
                     BluetoothGattDescriptor descriptor = gattCharacteristicTemp.getDescriptor(UUID.fromString(StaticResources.ESP32_DESCRIPTOR));
                     descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
                     gatt.writeDescriptor(descriptor);
@@ -185,8 +186,7 @@ class ConnectToGattServer {
                 case StaticResources.ESP32_HEARTH_CHARACTERISTIC:
                     gattCharacteristicHearth = foundCharacteristics.get(i);
                     gatt.setCharacteristicNotification(gattCharacteristicHearth, true);
-                    //for some reason I've to declare a descriptor to make the notify function work
-                    BluetoothGattDescriptor descriptor1 = gattCharacteristicTemp.getDescriptor(UUID.fromString(StaticResources.ESP32_DESCRIPTOR));
+                    BluetoothGattDescriptor descriptor1 = gattCharacteristicHearth.getDescriptor(UUID.fromString(StaticResources.ESP32_DESCRIPTOR));
                     descriptor1.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
                     gatt.writeDescriptor(descriptor1);
                     Log.d("assignCharacteristics" , "charactersitic has been assigned correctly, " +

@@ -195,11 +195,11 @@ public class SensorsInfo extends AppCompatActivity {
                     }
                     break;
                 case StaticResources.BROADCAST_CHARACTERISTIC_READ:
-                    if (tempChanged && !heartChanged) {
+                    if (tempChanged) {
                         String tempRead = intent.getStringExtra(StaticResources.EXTRA_CHARACTERISTIC_VALUE_READ);
                         tempValue.setText(tempRead);
                     }
-                    else if (!tempChanged && heartChanged){
+                    else if (heartChanged){
                         String heartRead  = intent.getStringExtra(StaticResources.EXTRA_CHARACTERISTIC_VALUE_READ);
                         heartValue.setText(heartRead);
                     }
