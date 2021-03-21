@@ -170,7 +170,7 @@ class ConnectToGattServer {
     private void assignCharacteristics(List<BluetoothGattCharacteristic> foundCharacteristics){
 
         for(int i=0; i<foundCharacteristics.size(); i++){
-
+        //I've to change this with an if/else because there is a bug
             switch(foundCharacteristics.get(i).getUuid().toString()) {
                 case StaticResources.ESP32_TEMP_CHARACTERISTIC:
                     gattCharacteristicTemp = foundCharacteristics.get(i);
