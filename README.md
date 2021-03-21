@@ -12,4 +12,10 @@
 </a>  
 
 ## Connection to the ESP32 
-![](https://github.com/CDOrtona/Tesi/blob/master/media/device-2021-03-21-144824.gif)
+
+<a href=url>
+
+ <img src="https://github.com/CDOrtona/Tesi/blob/master/media/device-2021-03-21-144824.gif" width="310" height="640" >
+
+</a>
+
