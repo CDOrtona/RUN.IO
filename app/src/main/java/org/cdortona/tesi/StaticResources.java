@@ -27,11 +27,11 @@ class StaticResources {
     static final String ACTION_CHARACTERISTIC_CHANGED_READ = PACKAGE_NAME + "characteristicChangedRead";
 
     //Keys for the putExtra method
-    static final String EXTRA_STATE_CONNECTION = "keyConnection";
-    static final String EXTRA_TEMP_VALUE = "tempValue";
-    static final String EXTRA_HEART_VALUE = "heartValue";
-    static final String EXTRA_BRIGHTNESS_VALUE = "brightnessValue";
-    static final String EXTRA_CHARACTERISTIC_CHANGED = "characteristicToBeNotified";
+    static final String EXTRA_STATE_CONNECTION = PACKAGE_NAME + "keyConnection";
+    static final String EXTRA_TEMP_VALUE = PACKAGE_NAME + "tempValue";
+    static final String EXTRA_HEART_VALUE = PACKAGE_NAME + "heartValue";
+    static final String EXTRA_BRIGHTNESS_VALUE = PACKAGE_NAME + "brightnessValue";
+    static final String EXTRA_CHARACTERISTIC_CHANGED = PACKAGE_NAME + "characteristicToBeNotified";
 
     //values for the putExtra method
     static final String STATE_CONNECTED = "Connected";

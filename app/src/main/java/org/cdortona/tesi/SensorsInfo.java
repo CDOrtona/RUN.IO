@@ -229,12 +229,24 @@ public class SensorsInfo extends AppCompatActivity {
                         Log.d(TAG, "Characteristic is Heart");
                     }
                     break;*/
-                    String onUpdateTempValue = intent.getStringExtra(StaticResources.EXTRA_TEMP_VALUE);
+                    Log.d("whichCharChanged", StaticResources.EXTRA_CHARACTERISTIC_CHANGED);
+                    switch (intent.getStringExtra(StaticResources.EXTRA_CHARACTERISTIC_CHANGED)){
+                        case StaticResources.ESP32_TEMP_CHARACTERISTIC:
+                            tempValue.setText(intent.getStringExtra(StaticResources.EXTRA_TEMP_VALUE));
+                            break;
+                        case StaticResources.ESP32_HEARTH_CHARACTERISTIC:
+                            heartValue.setText(intent.getStringExtra(StaticResources.EXTRA_HEART_VALUE));
+                            break;
+                        case  StaticResources.ESP32_BRIGHTNESS_CHARACTERISTIC:
+                            brightnessValue.setText(intent.getStringExtra(StaticResources.EXTRA_BRIGHTNESS_VALUE));
+                            break;
+                    }
+                    /*String onUpdateTempValue = intent.getStringExtra(StaticResources.EXTRA_TEMP_VALUE);
                     String onUpdateHeartValue = intent.getStringExtra(StaticResources.EXTRA_HEART_VALUE);
                     String onUpdateBrightnessValue = intent.getStringExtra(StaticResources.EXTRA_BRIGHTNESS_VALUE);
                     tempValue.setText(onUpdateTempValue);
                     heartValue.setText(onUpdateHeartValue);
-                    brightnessValue.setText(onUpdateBrightnessValue);
+                    brightnessValue.setText(onUpdateBrightnessValue);*/
             }
 
         }

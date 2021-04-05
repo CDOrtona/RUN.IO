@@ -85,11 +85,11 @@ class ConnectToGattServer {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 Log.d("onConnectionStateChange", "connected to Bluetooth successfully");
                 discoverServicesDelay(gatt);
-                updateBroadcast(StaticResources.STATE_CONNECTED);
+                updateBroadcast(StaticResources.STATE_CONNECTED, StaticResources.ACTION_CONNECTION_STATE);
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 Log.d("onConnectionStateChange", "disconnecting GATT server");
                 disconnectGattServer();
-                updateBroadcast(StaticResources.STATE_DISCONNECTED);
+                updateBroadcast(StaticResources.STATE_DISCONNECTED, StaticResources.ACTION_CONNECTION_STATE);
             } else if(newState == BluetoothProfile.STATE_CONNECTING){
                 Log.d("onConnectionStateChange", "Connecting...");
             }
@@ -98,6 +98,7 @@ class ConnectToGattServer {
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             super.onServicesDiscovered(gatt, status);
+
             gattServicesList = gatt.getServices();
             gattService = gatt.getService(UUID.fromString(StaticResources.ESP32_SERVICE));
             gattCharacteristicsList = gattService.getCharacteristics();
@@ -107,7 +108,7 @@ class ConnectToGattServer {
                 Log.i("onServicesDiscovered", "I'm printing the list of the services:" + gattServicesList.get(i).getUuid().toString() + '\n');
             }
 
-            assignCharacteristics(gattCharacteristicsList);
+            assignCharacteristics(gattCharacteristicsList, gatt);
         }
 
         //this method works if the GATT server has one or more characteristic with the property NOTIFY or INDICATE
@@ -116,9 +117,8 @@ class ConnectToGattServer {
         //this permits an asynchronous communication between the server and the client
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            Log.d("onCharacteristicChanged", "method has been called");
             super.onCharacteristicChanged(gatt, characteristic);
-
+            
             sensorValueBroadcast(characteristic);
         }
     };
@@ -136,8 +136,8 @@ class ConnectToGattServer {
         }
     }
 
-    private void updateBroadcast(String value){
-        Intent intent = new Intent(StaticResources.ACTION_CONNECTION_STATE);
+    private void updateBroadcast(String value, String action){
+        Intent intent = new Intent(action);
         intent.putExtra(StaticResources.EXTRA_STATE_CONNECTION, value);
         mContext.sendBroadcast(intent);
     }
@@ -148,18 +148,21 @@ class ConnectToGattServer {
             case StaticResources.ESP32_TEMP_CHARACTERISTIC:
                 byte[] tempData = characteristic.getValue();
                 String tempMessage = new String(tempData);
+                intent.putExtra(StaticResources.EXTRA_CHARACTERISTIC_CHANGED, characteristic.getUuid().toString());
                 intent.putExtra(StaticResources.EXTRA_TEMP_VALUE, tempMessage);
                 mContext.sendBroadcast(intent);
                 break;
             case StaticResources.ESP32_HEARTH_CHARACTERISTIC:
                 byte[] heartRate = characteristic.getValue();
                 String heartMessage = new String(heartRate);
+                intent.putExtra(StaticResources.EXTRA_CHARACTERISTIC_CHANGED, characteristic.getUuid().toString());
                 intent.putExtra(StaticResources.EXTRA_HEART_VALUE, heartMessage);
                 mContext.sendBroadcast(intent);
                 break;
             case StaticResources.ESP32_BRIGHTNESS_CHARACTERISTIC:
                 byte[] brightnessData = characteristic.getValue();
                 String brightnessMessage = new String(brightnessData);
+                intent.putExtra(StaticResources.EXTRA_CHARACTERISTIC_CHANGED, characteristic.getUuid().toString());
                 intent.putExtra(StaticResources.EXTRA_BRIGHTNESS_VALUE, brightnessMessage);
                 mContext.sendBroadcast(intent);
                 break;
@@ -167,7 +170,7 @@ class ConnectToGattServer {
     }
 
     //this method is used to find the predefined characteristics and then assign them to their BluetoothGattCharacteristic objects
-    private void assignCharacteristics(List<BluetoothGattCharacteristic> foundCharacteristics){
+    private void assignCharacteristics(List<BluetoothGattCharacteristic> foundCharacteristics, BluetoothGatt gatt){
 
         for(int i=0; i<foundCharacteristics.size(); i++){
         //I've to change this with an if/else because there is a bug
@@ -177,21 +180,36 @@ class ConnectToGattServer {
                     Log.d("assignCharacteristics" , "charactersitic has been assigned correctly, " +
                             + '\n' + "UUID: " + foundCharacteristics.get(i).getUuid());
 
-                    setCharacteristicNotification(foundCharacteristics.get(i));
+                    setCharacteristicNotification(foundCharacteristics.get(i), gatt);
+                    try{
+                        Thread.sleep(500);
+                    } catch (InterruptedException e){
+                        e.printStackTrace();
+                    }
                     break;
                 case StaticResources.ESP32_HEARTH_CHARACTERISTIC:
                     gattCharacteristicHearth = foundCharacteristics.get(i);
-                    Log.d("assignCharacteristics" , "charactersitic has been assigned correctly, " +
+                    Log.d("assignCharacteristics" , "characteristic has been assigned correctly, " +
                             + '\n' + "UUID: " + foundCharacteristics.get(i).getUuid());
 
-                    setCharacteristicNotification(foundCharacteristics.get(i));
+                    setCharacteristicNotification(foundCharacteristics.get(i), gatt);
+                    try{
+                        Thread.sleep(500);
+                    } catch (InterruptedException e){
+                        e.printStackTrace();
+                    }
                     break;
                 case StaticResources.ESP32_BRIGHTNESS_CHARACTERISTIC:
                     gattCharacteristicBrightness = foundCharacteristics.get(i);
-                    Log.d("assignCharacteristics" , "charactersitic has been assigned correctly, " +
+                    Log.d("assignCharacteristics" , "characteristic has been assigned correctly, " +
                             + '\n' + "UUID: " + foundCharacteristics.get(i).getUuid());
 
-                    setCharacteristicNotification(foundCharacteristics.get(i));
+                    setCharacteristicNotification(foundCharacteristics.get(i), gatt);
+                    try{
+                        Thread.sleep(500);
+                    } catch (InterruptedException e){
+                        e.printStackTrace();
+                    }
                     break;
                 default:
                     //this happens when there is a characteristic in the service that isn't part of the predefined ones
@@ -205,11 +223,11 @@ class ConnectToGattServer {
     //in order to use the notify property of the characteristic, a descriptor has been defined which lets the client
     //decide whether enabling the notify property of the GATT server characteristic or not
     // but setting CCCD value is the only way you can tell the API whether you are going to turn on notification
-    private void setCharacteristicNotification(BluetoothGattCharacteristic characteristic){
-        gatt.setCharacteristicNotification(characteristic, true);
+    private void setCharacteristicNotification(BluetoothGattCharacteristic characteristic, BluetoothGatt gatt){
         BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUID.fromString(StaticResources.ESP32_DESCRIPTOR));
         descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
         gatt.writeDescriptor(descriptor);
+        gatt.setCharacteristicNotification(characteristic, true);
         Log.d("setNotification", "Notification Enabled");
     }
 }
