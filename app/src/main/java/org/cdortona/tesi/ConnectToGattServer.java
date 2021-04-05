@@ -118,7 +118,7 @@ class ConnectToGattServer {
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             super.onCharacteristicChanged(gatt, characteristic);
-            
+
             sensorValueBroadcast(characteristic);
         }
     };
