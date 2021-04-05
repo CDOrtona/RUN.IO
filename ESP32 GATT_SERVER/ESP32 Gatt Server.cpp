@@ -45,7 +45,7 @@ void setup() {
   Serial.begin(115200);
 
   // Create the BLE Device
-  BLEDevice::init("GATT Server");
+  BLEDevice::init("ESP32");
 
   // Create the BLE Server
   pServer = BLEDevice::createServer();
