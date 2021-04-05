@@ -117,6 +117,8 @@ void loop() {
           delay(1000); // bluetooth stack will go into congestion, if too many packets are sent
         }
     }
+
+    //this is used in order to make the ESP32 advertise again once it disconnects from the Central 
     // disconnecting
     if (!deviceConnected && oldDeviceConnected) {
         delay(500);
