@@ -82,6 +82,14 @@ class ConnectToGattServer {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             super.onConnectionStateChange(gatt, status, newState);
+
+            if(status != BluetoothGatt.GATT_SUCCESS){
+                Log.e("onConnectionStateChange", "There is a problem connecting to the remote peripheral");
+                Toast.makeText(mContext,"Error occurred, please try again", Toast.LENGTH_SHORT).show();
+                updateBroadcast(StaticResources.STATE_DISCONNECTED, StaticResources.ACTION_CONNECTION_STATE);
+                return;
+            }
+
             //I'm creating an intent which contains the intent-filter used to identify the connection state of the GATT server
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 Log.d("onConnectionStateChange", "connected to Bluetooth successfully");
@@ -99,6 +107,14 @@ class ConnectToGattServer {
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             super.onServicesDiscovered(gatt, status);
+
+            if(status != BluetoothGatt.GATT_SUCCESS){
+                Log.e("onServiceDiscovered", "There was a problem with discovering the peripheral's services");
+                Toast.makeText(mContext,"The remote device appears to be malfunctioning", Toast.LENGTH_SHORT).show();
+                //Forcing to disconnect in case there is a problem with finding the services
+                updateBroadcast(StaticResources.STATE_DISCONNECTED, StaticResources.ACTION_CONNECTION_STATE);
+                return;
+            }
 
             gattServicesList = gatt.getServices();
             gattService = gatt.getService(UUID.fromString(StaticResources.ESP32_SERVICE));
@@ -129,7 +145,8 @@ class ConnectToGattServer {
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             super.onDescriptorWrite(gatt, descriptor, status);
             if(status != BluetoothGatt.GATT_SUCCESS){
-                Log.e("onDescriptorWrite", "The descriptor of the characteristic: " + descriptor.getCharacteristic().getUuid().toString() + " failed");
+                Log.e("onDescriptorWrite", "Writing to the descriptor of the characteristic: " + descriptor.getCharacteristic().getUuid().toString() + " failed");
+                Toast.makeText(mContext, "The notify property seems to not be working", Toast.LENGTH_SHORT).show();
             }
         }
     };
