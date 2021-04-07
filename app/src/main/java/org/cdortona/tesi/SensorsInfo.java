@@ -15,6 +15,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.Menu;
@@ -52,6 +53,7 @@ public class SensorsInfo extends AppCompatActivity {
     String deviceAddress;
     String deviceName;
     boolean connectedToGatt = false;
+    private String stateConnection = null;
 
     //flags used to tell which characteristic has changed
     boolean tempChanged = false;
@@ -203,16 +205,15 @@ public class SensorsInfo extends AppCompatActivity {
             switch (broadcastReceived) {
 
                 case StaticResources.ACTION_CONNECTION_STATE:
-                    if (intent.getStringExtra(StaticResources.EXTRA_STATE_CONNECTION).equals(StaticResources.STATE_CONNECTED)) {
+                    stateConnection = intent.getStringExtra(StaticResources.EXTRA_STATE_CONNECTION);
+                    if (stateConnection.equals(StaticResources.STATE_CONNECTED)) {
                         connectedToGatt = true;
                         invalidateOptionsMenu();
-                        connectionState.setTextColor(Color.GREEN);
-                        connectionState.setText(intent.getStringExtra(StaticResources.EXTRA_STATE_CONNECTION));
-                    } else if (intent.getStringExtra(StaticResources.EXTRA_STATE_CONNECTION).equals(StaticResources.STATE_DISCONNECTED)) {
+                        connectionStateString(StaticResources.STATE_CONNECTED);
+                    } else if (stateConnection.equals(StaticResources.STATE_DISCONNECTED)) {
                         connectedToGatt = false;
                         invalidateOptionsMenu();
-                        connectionState.setTextColor(Color.RED);
-                        connectionState.setText(intent.getStringExtra(StaticResources.EXTRA_STATE_CONNECTION));
+                        connectionStateString(StaticResources.STATE_DISCONNECTED);
                     }
                     break;
                 //this received broadcast lets the activity that subbed to this intent filter know which is the characteristic that has changed
@@ -299,23 +300,46 @@ public class SensorsInfo extends AppCompatActivity {
 
     //add an if that checks if the adaptor is connected to the GATT server already
     public void connectToGatt() {
-        try {
-            connectToGattServer.connectToGatt(deviceAddress);
-            //hard coded
-            connectionState.setTextColor(Color.YELLOW);
-            connectionState.setText("Connecting...");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        connectToGattServer.connectToGatt(deviceAddress);
+        //this makes sure that there is a time out error if it takes more than 10 seconds to connect to the remote peripheral
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if(stateConnection == null){
+                    Log.w("connectToGatt", "The connection has timed out");
+                    Toast.makeText(getApplicationContext(), "Timeout connection, try again", Toast.LENGTH_SHORT).show();
+                    connectionStateString(StaticResources.STATE_DISCONNECTED);
+                }
+            }
+        }, 10000);
+        connectionStateString(StaticResources.STATE_CONNECTING);
     }
 
     public void disconnectFromGatt() {
+        stateConnection = null;
         connectToGattServer.disconnectGattServer();
         connectedToGatt = false;
-        connectionState.setTextColor(Color.RED);
-        connectionState.setText("Disconnected");
+        connectionStateString(StaticResources.STATE_DISCONNECTED);
         //this is gonna flush the location stored in the location variable
         locationProviderClient.flushLocations();
         locationProviderClient.removeLocationUpdates(locationCallBack);
+    }
+
+    //this dynamically changes the string color and text of the string that shows on screen the connection state
+    private void connectionStateString(String state){
+        switch (state) {
+            case StaticResources.STATE_CONNECTED:
+                connectionState.setTextColor(Color.GREEN);
+                connectionState.setText(StaticResources.STATE_CONNECTED);
+                break;
+            case StaticResources.STATE_CONNECTING:
+                connectionState.setTextColor(Color.YELLOW);
+                connectionState.setText(StaticResources.STATE_CONNECTING);
+                break;
+            case StaticResources.STATE_DISCONNECTED:
+                connectionState.setTextColor(Color.RED);
+                connectionState.setText(StaticResources.STATE_DISCONNECTED);
+                break;
+        }
     }
 }

@@ -11,11 +11,13 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Handler;
 
 
 /**
@@ -72,6 +74,7 @@ class ConnectToGattServer {
     void disconnectGattServer(){
         if(gatt != null){
             Log.d("disconnectGattServer", "GATT server is disconnecting...");
+            Toast.makeText(mContext, "Disconnecting ...", Toast.LENGTH_SHORT).show();
             gatt.disconnect();
             gatt.close();
         }

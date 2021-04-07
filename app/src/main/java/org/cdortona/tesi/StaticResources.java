@@ -36,6 +36,7 @@ class StaticResources {
     //values for the putExtra method
     static final String STATE_CONNECTED = "Connected";
     static final String STATE_DISCONNECTED = "Disconnected";
+    static final String STATE_CONNECTING = "Connecting...";
 
     //General static Resources
     static final String WEB_PAGE = PACKAGE_NAME + ".webUrl";
