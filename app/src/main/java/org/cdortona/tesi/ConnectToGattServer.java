@@ -16,6 +16,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import java.util.List;
+import java.util.Queue;
 import java.util.UUID;
 import java.util.logging.Handler;
 
@@ -42,16 +43,25 @@ class ConnectToGattServer {
     private BluetoothGattCharacteristic gattCharacteristicBrightness;
     private List<BluetoothGattCharacteristic> gattCharacteristicsList;
 
+    //BLE receives and sends data asynchronously, hence there could be data that get are received or sent
+    //while BLE is still finishing to process the previous one.
+    //This happens because Android is able to process only one asynchronous operation at a time
+    //this is why I'm implementing a Queue interface of Runnables, where each Runnable is a BLE operation
+    Queue<Runnable> bleOperationsQueue;
+    //I'm using this as a flag in order specify is Android is running an operation already
+    //hence all the other asynchronous operations must wait
+    static boolean queueBusy;
+
     //Constructor which initializes the dependencies needed for the connection to the GATT server of the remote device(ESP32)
-    ConnectToGattServer(String deviceAddress, Context context){
+    ConnectToGattServer(String deviceAddress, Context context) {
         mContext = context;
-        final BluetoothManager bluetoothManager =(BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+        final BluetoothManager bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
         bluetoothAdapter = bluetoothManager.getAdapter();
         //connectToGatt(deviceAddress);
     }
 
     //method called whenever the "connect" button is pressed
-    void connectToGatt(String deviceAddress){
+    void connectToGatt(String deviceAddress) {
         //since I know which is the address of the device I want to connect to, I use the bluetoothAdapter object
         //in order to get to connect to the remote BLE advertiser
         try {
@@ -63,7 +73,7 @@ class ConnectToGattServer {
             //the auto-connect is set to true, which means the phone will automatically connect to the remote device when nearby
             //the auto-connect only works if the device is bounded to the gatt server, hence only if there is a secure connection between the two parties
             gatt = bleAdvertiser.connectGatt(mContext, true, gattCallBack);
-        } catch(IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             e.getStackTrace();
             Log.e("connectToGatt", "the address is not associated to any BLE advertiser nearby");
             Toast.makeText(mContext, "Error, the address doesn't match any BLE advertiser nearby", Toast.LENGTH_LONG).show();
@@ -71,8 +81,8 @@ class ConnectToGattServer {
     }
 
     //this method is invoked whenever there is the necessity to disconnect from the GATT server
-    void disconnectGattServer(){
-        if(gatt != null){
+    void disconnectGattServer() {
+        if (gatt != null) {
             Log.d("disconnectGattServer", "GATT server is disconnecting...");
             Toast.makeText(mContext, "Disconnecting ...", Toast.LENGTH_SHORT).show();
             gatt.disconnect();
@@ -86,9 +96,9 @@ class ConnectToGattServer {
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             super.onConnectionStateChange(gatt, status, newState);
 
-            if(status != BluetoothGatt.GATT_SUCCESS){
+            if (status != BluetoothGatt.GATT_SUCCESS) {
                 Log.e("onConnectionStateChange", "There is a problem connecting to the remote peripheral");
-                Toast.makeText(mContext,"Error occurred, please try again", Toast.LENGTH_SHORT).show();
+                Toast.makeText(mContext, "Error occurred, please try again", Toast.LENGTH_SHORT).show();
                 updateBroadcast(StaticResources.STATE_DISCONNECTED, StaticResources.ACTION_CONNECTION_STATE);
                 return;
             }
@@ -102,7 +112,7 @@ class ConnectToGattServer {
                 Log.d("onConnectionStateChange", "disconnecting GATT server");
                 disconnectGattServer();
                 updateBroadcast(StaticResources.STATE_DISCONNECTED, StaticResources.ACTION_CONNECTION_STATE);
-            } else if(newState == BluetoothProfile.STATE_CONNECTING){
+            } else if (newState == BluetoothProfile.STATE_CONNECTING) {
                 Log.d("onConnectionStateChange", "Connecting...");
             }
         }
@@ -111,9 +121,9 @@ class ConnectToGattServer {
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             super.onServicesDiscovered(gatt, status);
 
-            if(status != BluetoothGatt.GATT_SUCCESS){
+            if (status != BluetoothGatt.GATT_SUCCESS) {
                 Log.e("onServiceDiscovered", "There was a problem with discovering the peripheral's services");
-                Toast.makeText(mContext,"The remote device appears to be malfunctioning", Toast.LENGTH_SHORT).show();
+                Toast.makeText(mContext, "The remote device appears to be malfunctioning", Toast.LENGTH_SHORT).show();
                 //Forcing to disconnect in case there is a problem with finding the services
                 updateBroadcast(StaticResources.STATE_DISCONNECTED, StaticResources.ACTION_CONNECTION_STATE);
                 return;
@@ -124,11 +134,12 @@ class ConnectToGattServer {
             gattCharacteristicsList = gattService.getCharacteristics();
 
             //debug
-            for(int i=1; i<gattServicesList.size(); i++){
+            for (int i = 1; i < gattServicesList.size(); i++) {
                 Log.i("onServicesDiscovered", "I'm printing the list of the services:" + gattServicesList.get(i).getUuid().toString() + '\n');
             }
 
-            assignCharacteristics(gattCharacteristicsList, gatt);
+            assignCharacteristics(gattCharacteristicsList);
+            setCharacteristicNotification();
         }
 
         //this method works if the GATT server has one or more characteristic with the property NOTIFY or INDICATE
@@ -143,14 +154,16 @@ class ConnectToGattServer {
             sensorValueBroadcast(characteristic);
         }
 
-        //this is called whenever the descriptor of a characteristic is written in order to turn on its notify property
+        //this is called whenever the descriptor of a characteristic is written
         @Override
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             super.onDescriptorWrite(gatt, descriptor, status);
-            if(status != BluetoothGatt.GATT_SUCCESS){
+            if (status != BluetoothGatt.GATT_SUCCESS) {
                 Log.e("onDescriptorWrite", "Writing to the descriptor of the characteristic: " + descriptor.getCharacteristic().getUuid().toString() + " failed");
                 Toast.makeText(mContext, "The notify property seems to not be working", Toast.LENGTH_SHORT).show();
             }
+
+            //SensorsInfo.completedOperation(bleOperationsQueue);
         }
     };
 
@@ -167,15 +180,15 @@ class ConnectToGattServer {
         }
     }
 
-    private void updateBroadcast(String value, String action){
+    private void updateBroadcast(String value, String action) {
         Intent intent = new Intent(action);
         intent.putExtra(StaticResources.EXTRA_STATE_CONNECTION, value);
         mContext.sendBroadcast(intent);
     }
 
-    private void sensorValueBroadcast(BluetoothGattCharacteristic characteristic){
+    private void sensorValueBroadcast(BluetoothGattCharacteristic characteristic) {
         Intent intent = new Intent(StaticResources.ACTION_CHARACTERISTIC_CHANGED_READ);
-        switch (characteristic.getUuid().toString()){
+        switch (characteristic.getUuid().toString()) {
             case StaticResources.ESP32_TEMP_CHARACTERISTIC:
                 byte[] tempData = characteristic.getValue();
                 String tempMessage = new String(tempData);
@@ -201,33 +214,25 @@ class ConnectToGattServer {
     }
 
     //this method is used to find the predefined characteristics and then assign them to their BluetoothGattCharacteristic objects
-    private void assignCharacteristics(List<BluetoothGattCharacteristic> foundCharacteristics, BluetoothGatt gatt){
-
-        for(int i=0; i<foundCharacteristics.size(); i++){
-        //I've to change this with an if/else because there is a bug
-            switch(foundCharacteristics.get(i).getUuid().toString()) {
+    private void assignCharacteristics(List<BluetoothGattCharacteristic> foundCharacteristics) {
+        for (int i = 0; i < foundCharacteristics.size(); i++) {
+            switch (foundCharacteristics.get(i).getUuid().toString()) {
                 case StaticResources.ESP32_TEMP_CHARACTERISTIC:
                     gattCharacteristicTemp = foundCharacteristics.get(i);
-                    Log.d("assignCharacteristics" , "charactersitic has been assigned correctly, " +
-                            + '\n' + "UUID: " + foundCharacteristics.get(i).getUuid());
-
-                    setCharacteristicNotification(foundCharacteristics.get(i), gatt);
+                    Log.d("assignCharacteristics", "charactersitic has been assigned correctly, " +
+                            +'\n' + "UUID: " + foundCharacteristics.get(i).getUuid());
                     break;
 
                 case StaticResources.ESP32_HEARTH_CHARACTERISTIC:
                     gattCharacteristicHearth = foundCharacteristics.get(i);
-                    Log.d("assignCharacteristics" , "characteristic has been assigned correctly, " +
-                            + '\n' + "UUID: " + foundCharacteristics.get(i).getUuid());
-
-                    setCharacteristicNotification(foundCharacteristics.get(i), gatt);
+                    Log.d("assignCharacteristics", "characteristic has been assigned correctly, " +
+                            +'\n' + "UUID: " + foundCharacteristics.get(i).getUuid());
                     break;
 
                 case StaticResources.ESP32_BRIGHTNESS_CHARACTERISTIC:
                     gattCharacteristicBrightness = foundCharacteristics.get(i);
-                    Log.d("assignCharacteristics" , "characteristic has been assigned correctly, " +
-                            + '\n' + "UUID: " + foundCharacteristics.get(i).getUuid());
-
-                    setCharacteristicNotification(foundCharacteristics.get(i), gatt);
+                    Log.d("assignCharacteristics", "characteristic has been assigned correctly, " +
+                            +'\n' + "UUID: " + foundCharacteristics.get(i).getUuid());
                     break;
 
                 default:
@@ -243,29 +248,22 @@ class ConnectToGattServer {
     //decide whether enabling the notify property of the GATT server characteristic or not
     // but setting CCCD value is the only way you can tell the API whether you are going to turn on notification
     //https://medium.com/@martijn.van.welie/making-android-ble-work-part-3-117d3a8aee23
-    private void setCharacteristicNotification(BluetoothGattCharacteristic characteristic, BluetoothGatt gatt){
-        BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUID.fromString(StaticResources.ESP32_DESCRIPTOR));
+    private void setCharacteristicNotification(){
 
-        if(descriptor == null){
-            Log.e("setNotification", "The characteristic" + characteristic.getUuid().toString() + " has no descriptor");
-            return;
-        }
+        BluetoothGattDescriptor brightnessDescriptor = gattCharacteristicBrightness.getDescriptor(UUID.fromString(StaticResources.ESP32_DESCRIPTOR));
+        gatt.setCharacteristicNotification(brightnessDescriptor.getCharacteristic(), true);
+        brightnessDescriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+        gatt.writeDescriptor(brightnessDescriptor);
 
-        byte[] value;
-        //I have to check if the descriptor has the notify property
-        //PROPERTY_NOTIFY ---> h'0x00000010  ---> 16 in decimals
-        if((characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0){
-            value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE;
-        } else {
-            Log.w("setNotification", "the characteristic has no indication property");
-            return;
-        }
+        BluetoothGattDescriptor hearthDescriptor = gattCharacteristicHearth.getDescriptor(UUID.fromString(StaticResources.ESP32_DESCRIPTOR));
+        gatt.setCharacteristicNotification(hearthDescriptor.getCharacteristic(), true);
+        hearthDescriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+        gatt.writeDescriptor(hearthDescriptor);
 
-        //if all checks have passed, it's time to turn on the notification property of the specified characteristic
-        gatt.setCharacteristicNotification(characteristic, true);
+        BluetoothGattDescriptor tempDescriptor = gattCharacteristicTemp.getDescriptor(UUID.fromString(StaticResources.ESP32_DESCRIPTOR));
+        gatt.setCharacteristicNotification(tempDescriptor.getCharacteristic(), true);
+        tempDescriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+        gatt.writeDescriptor(tempDescriptor);
 
-        descriptor.setValue(value);
-        gatt.writeDescriptor(descriptor);
-        Log.d("setNotification", "Notification Enabled");
     }
 }

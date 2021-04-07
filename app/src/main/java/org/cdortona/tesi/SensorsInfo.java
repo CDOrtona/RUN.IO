@@ -33,6 +33,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.Queue;
 
 /**
  * Cristian D'Ortona
@@ -306,8 +307,8 @@ public class SensorsInfo extends AppCompatActivity {
             @Override
             public void run() {
                 if(stateConnection == null){
-                    Log.w("connectToGatt", "The connection has timed out");
-                    Toast.makeText(getApplicationContext(), "Timeout connection, try again", Toast.LENGTH_SHORT).show();
+                    Log.w("connectToGatt", "Timeout connection to remote peripheral");
+                    Toast.makeText(getApplicationContext(), "The connection has timed out, try again", Toast.LENGTH_SHORT).show();
                     connectionStateString(StaticResources.STATE_DISCONNECTED);
                 }
             }
