@@ -10,7 +10,9 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
+import android.bluetooth.le.ScanSettings;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -18,12 +20,12 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.ParcelUuid;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Adapter;
 import android.widget.AdapterView;
 
 import android.widget.ImageView;
@@ -31,6 +33,8 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Cristian D'Ortona
@@ -52,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
 
     //this end the scan every 10 seconds
     //it's very important as in a LE application we want to reduce battery-intensive tasks
-    private static final long SCAN_PERIOD = 8000;
+    private static final long SCAN_PERIOD = 10000;
 
     //noBlueooth Icon
     ImageView noBluetoothIcon;
@@ -261,8 +265,30 @@ public class MainActivity extends AppCompatActivity {
                 }
             }, SCAN_PERIOD);
             scanning = true;
+
+            //filter for the scan activity
+            UUID[] serviceUUIDs = new UUID[]{UUID.fromString(StaticResources.ESP32_SERVICE)};
+            List<ScanFilter> filters = null;
+            if(serviceUUIDs != null) {
+                filters = new ArrayList<>();
+                for (UUID serviceUUID : serviceUUIDs) {
+                    ScanFilter filter = new ScanFilter.Builder()
+                            .setServiceUuid(new ParcelUuid(serviceUUID))
+                            .build();
+                    filters.add(filter);
+                }
+            }
+            //settings for the scan activity
+            ScanSettings scanSettings = new ScanSettings.Builder()
+                    .setScanMode(ScanSettings.SCAN_MODE_LOW_POWER)
+                    .setCallbackType(ScanSettings.CALLBACK_TYPE_FIRST_MATCH)
+                    .setMatchMode(ScanSettings.MATCH_MODE_AGGRESSIVE)
+                    .setNumOfMatches(ScanSettings.MATCH_NUM_FEW_ADVERTISEMENT)
+                    .setReportDelay(0)
+                    .build();
             //this is executed during the x time before the thread is activated
-            bluetoothLeScanner.startScan(leScanCallBack);
+            bluetoothLeScanner.startScan(filters, scanSettings, leScanCallBack);
+           // bluetoothLeScanner.startScan(leScanCallBack);
             Log.d("startScan", "scan has started");
         }
     }
@@ -288,6 +314,7 @@ public class MainActivity extends AppCompatActivity {
             BluetoothDevice device = result.getDevice();
             customAdapter.add(new DevicesScannedModel(device.getName(), device.getAddress(), result.getRssi(), device.getBondState()));
             customAdapter.notifyDataSetChanged();
+            Log.d("onScanResult", "Device name: " + device.getName());
         }
         public void onScanFailed(int errorCode) {
             Toast.makeText(getBaseContext(), "scan has failed, please retry again", Toast.LENGTH_SHORT).show();
