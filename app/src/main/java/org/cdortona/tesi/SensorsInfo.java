@@ -33,7 +33,6 @@ import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.ArrayList;
 import java.util.Objects;
-import java.util.Queue;
 
 /**
  * Cristian D'Ortona

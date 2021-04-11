@@ -14,8 +14,8 @@ import android.content.Intent;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.util.Arrays;
 import java.util.List;
-import java.util.Queue;
 import java.util.UUID;
 
 
@@ -40,15 +40,6 @@ class ConnectToGattServer {
     private BluetoothGattCharacteristic gattCharacteristicHearth;
     private BluetoothGattCharacteristic gattCharacteristicBrightness;
     private List<BluetoothGattCharacteristic> gattCharacteristicsList;
-
-    //BLE receives and sends data asynchronously, hence there could be data that get are received or sent
-    //while BLE is still finishing to process the previous one.
-    //This happens because Android is able to process only one asynchronous operation at a time
-    //this is why I'm implementing a Queue interface of Runnables, where each Runnable is a BLE operation
-    Queue<Runnable> bleOperationsQueue;
-    //I'm using this as a flag in order specify is Android is running an operation already
-    //hence all the other asynchronous operations must wait
-    static boolean queueBusy;
 
     //Constructor which initializes the dependencies needed for the connection to the GATT server of the remote device(ESP32)
     ConnectToGattServer(String deviceAddress, Context context) {
@@ -136,8 +127,37 @@ class ConnectToGattServer {
                 Log.i("onServicesDiscovered", "I'm printing the list of the services:" + gattServicesList.get(i).getUuid().toString() + '\n');
             }
 
-            assignCharacteristics(gattCharacteristicsList);
-            //setCharacteristicNotification();
+            for (int i = 0; i < gattCharacteristicsList.size(); i++) {
+                switch (gattCharacteristicsList.get(i).getUuid().toString()) {
+                    case StaticResources.ESP32_TEMP_CHARACTERISTIC:
+                        gattCharacteristicTemp = gattCharacteristicsList.get(i);
+                        Log.d("assignCharacteristics", "charactersitic has been assigned correctly, " +
+                                +'\n' + "UUID: " + gattCharacteristicsList.get(i).getUuid());
+
+                        break;
+
+                    case StaticResources.ESP32_HEARTH_CHARACTERISTIC:
+                        gattCharacteristicHearth = gattCharacteristicsList.get(i);
+                        Log.d("assignCharacteristics", "characteristic has been assigned correctly, " +
+                                +'\n' + "UUID: " + gattCharacteristicsList.get(i).getUuid());
+
+                        break;
+
+                    case StaticResources.ESP32_BRIGHTNESS_CHARACTERISTIC:
+                        gattCharacteristicBrightness = gattCharacteristicsList.get(i);
+                        Log.d("assignCharacteristics", "characteristic has been assigned correctly, " +
+                                +'\n' + "UUID: " + gattCharacteristicsList.get(i).getUuid());
+
+                        break;
+
+                    default:
+                        //this happens when there is a characteristic in the service that isn't part of the predefined ones
+                        Log.d("assignCharacteristics", "Characteristic not listed in the predefined ones"
+                                + '\n' + "UUID: " + gattCharacteristicsList.get(i).getUuid());
+                        break;
+                }
+            }
+            setCharacteristicNotification();
         }
 
         //this method works if the GATT server has one or more characteristic with the property NOTIFY or INDICATE
@@ -161,7 +181,9 @@ class ConnectToGattServer {
                 Toast.makeText(mContext, "The notify property seems to not be working", Toast.LENGTH_SHORT).show();
             }
 
-            //SensorsInfo.completedOperation(bleOperationsQueue);
+            Log.d("onDescriptorWrite", "Characteristic: " + descriptor.getCharacteristic().getUuid().toString() + " notify() property -> ON");
+            gatt.setCharacteristicNotification(descriptor.getCharacteristic(), true);
+            setCharacteristicNotification();
         }
     };
 
@@ -213,89 +235,27 @@ class ConnectToGattServer {
 
     //this method is used to find the predefined characteristics and then assign them to their BluetoothGattCharacteristic objects
     private void assignCharacteristics(List<BluetoothGattCharacteristic> foundCharacteristics) {
-        for (int i = 0; i < foundCharacteristics.size(); i++) {
-            switch (foundCharacteristics.get(i).getUuid().toString()) {
-                case StaticResources.ESP32_TEMP_CHARACTERISTIC:
-                    gattCharacteristicTemp = foundCharacteristics.get(i);
-                    Log.d("assignCharacteristics", "charactersitic has been assigned correctly, " +
-                            +'\n' + "UUID: " + foundCharacteristics.get(i).getUuid());
 
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            BluetoothGattDescriptor tempDescriptor = gattCharacteristicTemp.getDescriptor(UUID.fromString(StaticResources.ESP32_DESCRIPTOR));
-                            tempDescriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-                            gatt.writeDescriptor(tempDescriptor);
-                            gatt.setCharacteristicNotification(gattCharacteristicTemp, true);
-                        }
-                    }).start();
-
-                    break;
-
-                case StaticResources.ESP32_HEARTH_CHARACTERISTIC:
-                    gattCharacteristicHearth = foundCharacteristics.get(i);
-                    Log.d("assignCharacteristics", "characteristic has been assigned correctly, " +
-                            +'\n' + "UUID: " + foundCharacteristics.get(i).getUuid());
-
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            BluetoothGattDescriptor hearthDescriptor = gattCharacteristicHearth.getDescriptor(UUID.fromString(StaticResources.ESP32_DESCRIPTOR));
-                            hearthDescriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-                            gatt.writeDescriptor(hearthDescriptor);
-                            gatt.setCharacteristicNotification(gattCharacteristicHearth, true);
-                        }
-                    }).start();
-
-                    break;
-
-                case StaticResources.ESP32_BRIGHTNESS_CHARACTERISTIC:
-                    gattCharacteristicBrightness = foundCharacteristics.get(i);
-                    Log.d("assignCharacteristics", "characteristic has been assigned correctly, " +
-                            +'\n' + "UUID: " + foundCharacteristics.get(i).getUuid());
-
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            BluetoothGattDescriptor brightnessDescriptor = gattCharacteristicBrightness.getDescriptor(UUID.fromString(StaticResources.ESP32_DESCRIPTOR));
-                            brightnessDescriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-                            gatt.writeDescriptor(brightnessDescriptor);
-                            gatt.setCharacteristicNotification(gattCharacteristicBrightness, true);
-                        }
-                    }).start();
-
-                    break;
-
-                default:
-                    //this happens when there is a characteristic in the service that isn't part of the predefined ones
-                    Log.d("assignCharacteristics", "Characteristic not listed in the predefined ones"
-                            + '\n' + "UUID: " + foundCharacteristics.get(i).getUuid());
-                    break;
-            }
-        }
     }
 
     //in order to use the notify property of the characteristic, a descriptor has been defined which lets the client
     //decide whether enabling the notify property of the GATT server characteristic or not
     // but setting CCCD value is the only way you can tell the API whether you are going to turn on notification
-    //https://medium.com/@martijn.van.welie/making-android-ble-work-part-3-117d3a8aee23
     private void setCharacteristicNotification(){
 
-       BluetoothGattDescriptor brightnessDescriptor = gattCharacteristicBrightness.getDescriptor(UUID.fromString(StaticResources.ESP32_DESCRIPTOR));
-        gatt.setCharacteristicNotification(brightnessDescriptor.getCharacteristic(), true);
-        brightnessDescriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-        gatt.writeDescriptor(brightnessDescriptor);
-
-
-        BluetoothGattDescriptor hearthDescriptor = gattCharacteristicHearth.getDescriptor(UUID.fromString(StaticResources.ESP32_DESCRIPTOR));
-        gatt.setCharacteristicNotification(hearthDescriptor.getCharacteristic(), true);
-        hearthDescriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-        gatt.writeDescriptor(hearthDescriptor);
-
-        BluetoothGattDescriptor tempDescriptor = gattCharacteristicTemp.getDescriptor(UUID.fromString(StaticResources.ESP32_DESCRIPTOR));
-        gatt.setCharacteristicNotification(tempDescriptor.getCharacteristic(), true);
-        tempDescriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-        gatt.writeDescriptor(tempDescriptor);
-
+        for(int i=0; i<gattCharacteristicsList.size(); i++){
+            int characteristicProperties = gattCharacteristicsList.get(i).getProperties();
+            //this checks if the characteristic has the notify property h'0x10 -> b'10000
+            if(((characteristicProperties>>4) ^ BluetoothGattCharacteristic.PROPERTY_NOTIFY>>4) == 0){
+                //this checks if the specified characteristic notification property is already activated or not
+                //if it's turned on then the descriptor has been written with the value h'0x01 -> b'0001
+                if(!Arrays.equals(gattCharacteristicsList.get(i).getDescriptor(UUID.fromString(StaticResources.ESP32_DESCRIPTOR)).getValue(), BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)){
+                    BluetoothGattDescriptor brightnessDescriptor = gattCharacteristicsList.get(i).getDescriptor(UUID.fromString(StaticResources.ESP32_DESCRIPTOR));
+                    brightnessDescriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                    gatt.writeDescriptor(brightnessDescriptor);
+                    return;
+                }
+            }
+        }
     }
 }

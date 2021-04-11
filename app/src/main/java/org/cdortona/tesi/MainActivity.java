@@ -269,26 +269,23 @@ public class MainActivity extends AppCompatActivity {
             //filter for the scan activity
             UUID[] serviceUUIDs = new UUID[]{UUID.fromString(StaticResources.ESP32_SERVICE)};
             List<ScanFilter> filters = null;
-            if(serviceUUIDs != null) {
-                filters = new ArrayList<>();
-                for (UUID serviceUUID : serviceUUIDs) {
-                    ScanFilter filter = new ScanFilter.Builder()
-                            .setServiceUuid(new ParcelUuid(serviceUUID))
-                            .build();
-                    filters.add(filter);
-                }
+            filters = new ArrayList<>();
+            for (UUID serviceUUID : serviceUUIDs) {
+                ScanFilter filter = new ScanFilter.Builder()
+                        .setServiceUuid(new ParcelUuid(serviceUUID))
+                        .build();
+                filters.add(filter);
             }
             //settings for the scan activity
             ScanSettings scanSettings = new ScanSettings.Builder()
                     .setScanMode(ScanSettings.SCAN_MODE_LOW_POWER)
                     .setCallbackType(ScanSettings.CALLBACK_TYPE_FIRST_MATCH)
-                    .setMatchMode(ScanSettings.MATCH_MODE_AGGRESSIVE)
+                    .setMatchMode(ScanSettings.MATCH_MODE_STICKY)
                     .setNumOfMatches(ScanSettings.MATCH_NUM_FEW_ADVERTISEMENT)
                     .setReportDelay(0)
                     .build();
             //this is executed during the x time before the thread is activated
             bluetoothLeScanner.startScan(filters, scanSettings, leScanCallBack);
-           // bluetoothLeScanner.startScan(leScanCallBack);
             Log.d("startScan", "scan has started");
         }
     }
