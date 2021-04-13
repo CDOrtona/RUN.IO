@@ -7,7 +7,7 @@ package org.cdortona.tesi;
  *
  */
 
-class StaticResources {
+final class StaticResources {
 
     private static final String PACKAGE_NAME = "com.cdortona.tesi";
 
@@ -42,4 +42,5 @@ class StaticResources {
     static final String WEB_PAGE = PACKAGE_NAME + ".webUrl";
     static final String EXTRA_CHOOSEN_ADDRESS = PACKAGE_NAME + ".address";
     static final String EXTRA_CHOOSEN_NAME = PACKAGE_NAME + ".name";
+    static final int REQUEST_CODE_SCAN_ACTIVITY = 1;
 }

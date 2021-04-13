@@ -8,8 +8,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <uses-feature
-        android:name="android.hardware.bluetooth_le"
-        android:required="false" />
+        android:name="android.hardware.bluetooth_le" android:required="true" />
 
     <application
         android:allowBackup="true"
@@ -29,15 +28,17 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".SensorsInfo"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".MainActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".MainActivity"
+            android:screenOrientation="portrait">
+
         </activity>
     </application>
 

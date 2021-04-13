@@ -12,7 +12,7 @@
         android:background="@color/colorPrimary"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         app:popupTheme="@style/AppTheme.PopupOverlay"
-        app:title="AndroShirt"/>
+        app:title="Scan "/>
 
     <ListView
         android:id="@+id/list_view"

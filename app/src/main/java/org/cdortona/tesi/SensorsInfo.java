@@ -1,11 +1,14 @@
 package org.cdortona.tesi;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
+import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -32,7 +35,6 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 /**
  * Cristian D'Ortona
@@ -50,10 +52,11 @@ public class SensorsInfo extends AppCompatActivity {
     ConnectToGattServer connectToGattServer;
 
     //GATT
-    String deviceAddress;
-    String deviceName;
+    private String deviceAddress;
+    private String deviceName;
     boolean connectedToGatt = false;
     private String stateConnection = null;
+    private boolean flagDeviceFound = false;
 
     //flags used to tell which characteristic has changed
     boolean tempChanged = false;
@@ -77,7 +80,7 @@ public class SensorsInfo extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_sensors_info);
+        setContentView(R.layout.activity_sensors_info_new);
 
         //UI setup
         addressInfo = findViewById(R.id.address_textView);
@@ -88,17 +91,6 @@ public class SensorsInfo extends AppCompatActivity {
         brightnessValue = findViewById(R.id.textView_brightness);
         positionValue = findViewById(R.id.textView_position);
 
-        //I have to retrieve the info from the Intent which called this activity
-        Intent receivedIntent = getIntent();
-        deviceAddress = receivedIntent.getStringExtra(StaticResources.EXTRA_CHOOSEN_ADDRESS);
-        deviceName = receivedIntent.getStringExtra(StaticResources.EXTRA_CHOOSEN_NAME);
-
-
-        //Setting the values of the TextViews objects
-        addressInfo.setTypeface(Typeface.SANS_SERIF);
-        addressInfo.setText(deviceAddress);
-        nameInfo.setTypeface(Typeface.SANS_SERIF);
-        nameInfo.setText(deviceName);
         //hard coded, I must change it later
         connectionState.setTextColor(Color.RED);
         connectionState.setText("Disconnected");
@@ -119,8 +111,6 @@ public class SensorsInfo extends AppCompatActivity {
         //Toolbar
         toolbar = findViewById(R.id.toolbar_sensors);
         setSupportActionBar(toolbar);
-        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-
     }
 
     @Override
@@ -137,17 +127,18 @@ public class SensorsInfo extends AppCompatActivity {
         return true;
     }
 
-    //this is called whenever the user clicks on the back arrow
-    //it works as an UP button
-    public boolean onSupportNavigateUp() {
-        //this is called when the activity detects the user pressed the back button
-        onBackPressed();
-        return true;
-    }
-
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
+            case(R.id.action_connect_to_peripheral):
+                Intent scanDevices = new Intent(SensorsInfo.this, MainActivity.class);
+                try{
+                    startActivityForResult(scanDevices, StaticResources.REQUEST_CODE_SCAN_ACTIVITY);
+                } catch (ActivityNotFoundException e){
+                    e.printStackTrace();
+                    finish();
+                }
+                return true;
             case (R.id.action_connect):
                 connectToGatt();
                 return true;
@@ -155,14 +146,27 @@ public class SensorsInfo extends AppCompatActivity {
                 invalidateOptionsMenu();
                 disconnectFromGatt();
                 return true;
+
             case (R.id.action_graph_rssi):
                 Intent rssiGraph = new Intent(SensorsInfo.this, GraphRssi.class);
                 rssiGraph.putExtra(StaticResources.EXTRA_CHOOSEN_ADDRESS, deviceAddress);
-                startActivity(rssiGraph);
+                try{
+                    startActivity(rssiGraph);
+                } catch (ActivityNotFoundException e){
+                    e.printStackTrace();
+                    finish();
+                }
                 return true;
+
             case (R.id.action_mqtt):
                 Toast.makeText(this, "Send data to Cloud", Toast.LENGTH_SHORT).show();
                 //MQTT
+                return true;
+
+            case (R.id.action_about):
+                Intent aboutWebView = new Intent(SensorsInfo.this, AboutWebView.class);
+                aboutWebView.putExtra(StaticResources.WEB_PAGE, "https://github.com/CDOrtona/Tesi");
+                startActivity(aboutWebView);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -192,6 +196,23 @@ public class SensorsInfo extends AppCompatActivity {
     public void onBackPressed() {
         super.onBackPressed();
         disconnectFromGatt();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == StaticResources.REQUEST_CODE_SCAN_ACTIVITY && resultCode != Activity.RESULT_CANCELED){
+            deviceAddress = data.getStringExtra(StaticResources.EXTRA_CHOOSEN_ADDRESS);
+            deviceName = data.getStringExtra(StaticResources.EXTRA_CHOOSEN_NAME);
+            //Setting the values of the TextViews objects
+            addressInfo.setTypeface(Typeface.SANS_SERIF);
+            addressInfo.setText(deviceAddress);
+            nameInfo.setTypeface(Typeface.SANS_SERIF);
+            nameInfo.setText(deviceName);
+            flagDeviceFound = true;
+        } else {
+            flagDeviceFound = false;
+        }
     }
 
     //this is used to receive the broadcast announcements that are being sent from the class ConnectToGattServer()
@@ -290,8 +311,8 @@ public class SensorsInfo extends AppCompatActivity {
                 @Override
                 public void onSuccess(Location location) {
                     //location is null if there is no known location found
-                    String position = "Lo: " + location.getLongitude() + '\n' + '\n'
-                            + "La: " + location.getLatitude();
+                    String position = "Lo: " + Math.round(location.getLongitude() * 100d) / 100d + '\n' + '\n'
+                            + "La: " + Math.round(location.getLatitude() * 100d) / 100d;
                     positionValue.setText(position);
                 }
             });
@@ -300,23 +321,29 @@ public class SensorsInfo extends AppCompatActivity {
 
     //add an if that checks if the adaptor is connected to the GATT server already
     public void connectToGatt() {
-        connectToGattServer.connectToGatt(deviceAddress);
-        //this makes sure that there is a time out error if it takes more than 10 seconds to connect to the remote peripheral
-        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if(stateConnection == null){
-                    Log.w("connectToGatt", "Timeout connection to remote peripheral");
-                    Toast.makeText(getApplicationContext(), "The connection has timed out, try again", Toast.LENGTH_SHORT).show();
-                    connectionStateString(StaticResources.STATE_DISCONNECTED);
+        if(flagDeviceFound){
+            connectToGattServer.connectToGatt(deviceAddress);
+            //this makes sure that there is a time out error if it takes more than 10 seconds to connect to the remote peripheral
+            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if(stateConnection == null){
+                        Log.w("connectToGatt", "Timeout connection to remote peripheral");
+                        Toast.makeText(getApplicationContext(), "The connection has timed out, try again", Toast.LENGTH_SHORT).show();
+                        connectionStateString(StaticResources.STATE_DISCONNECTED);
+                        disconnectFromGatt();
+                    }
                 }
-            }
-        }, 10000);
-        connectionStateString(StaticResources.STATE_CONNECTING);
+            }, 10000);
+            connectionStateString(StaticResources.STATE_CONNECTING);
+        } else {
+            Toast.makeText(this, "Please, connect to remote device first", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void disconnectFromGatt() {
         stateConnection = null;
+        flagDeviceFound = false;
         connectToGattServer.disconnectGattServer();
         connectedToGatt = false;
         connectionStateString(StaticResources.STATE_DISCONNECTED);

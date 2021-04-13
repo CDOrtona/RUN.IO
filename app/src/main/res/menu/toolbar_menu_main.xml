@@ -16,9 +16,4 @@
     <item android:id="@+id/action_adapter_info"
         android:title="@string/toolbar_main_adapter_info"
         app:showAsAction="never" />
-
-    <item android:id="@+id/action_about"
-        android:title="@string/toolbar_main_about"
-        app:showAsAction="never"/>
-
 </menu>

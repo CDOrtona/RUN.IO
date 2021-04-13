@@ -7,6 +7,11 @@
         android:title="@string/menu_connect"
         app:showAsAction="always"/>
 
+    <item android:id="@+id/action_connect_to_peripheral"
+        android:title="Scan Remote Devices"
+        app:showAsAction="never"
+        android:enabled="true"/>
+
     <item
         android:id="@+id/action_disconnect"
         android:title="@string/menu_disconnect"
@@ -21,5 +26,10 @@
         android:title="@string/toolbar_sensors_mqtt"
         app:showAsAction="never"
         android:enabled="false"/>
+
+    <item android:id="@+id/action_about"
+        android:title="@string/toolbar_main_about"
+        app:showAsAction="never"/>
+
 
 </menu>

@@ -34,6 +34,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -95,7 +96,8 @@ public class MainActivity extends AppCompatActivity {
                 final Intent intent = new Intent(MainActivity.this, SensorsInfo.class);
                 intent.putExtra(StaticResources.EXTRA_CHOOSEN_ADDRESS, devicesScannedList.get(position).getBleAddress());
                 intent.putExtra(StaticResources.EXTRA_CHOOSEN_NAME, devicesScannedList.get(position).getDeviceName());
-                startActivity(intent);
+                setResult(StaticResources.REQUEST_CODE_SCAN_ACTIVITY, intent);
+                finish();
 
             }
         });
@@ -104,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
         //Toolbar
         toolbar = findViewById(R.id.toolbar_main);
         setSupportActionBar(toolbar);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
     }
 
     //this lets me add the menu resource to the toolbar
@@ -113,6 +116,19 @@ public class MainActivity extends AppCompatActivity {
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.toolbar_menu_main, menu);
         return true;
+    }
+
+    public boolean onSupportNavigateUp() {
+        //this is called when the activity detects the user pressed the back button
+        onBackPressed();
+        return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        if(bluetoothLeScanner != null)
+            stopScan();
     }
 
     //this method is called whenever the user select an item from the toolbar menu
@@ -133,11 +149,6 @@ public class MainActivity extends AppCompatActivity {
             case (R.id.action_adapter_info):
                 Intent adapterInfo = new Intent(MainActivity.this, AdapterInfo.class);
                 startActivity(adapterInfo);
-                return true;
-            case (R.id.action_about):
-                Intent aboutWebView = new Intent(MainActivity.this, AboutWebView.class);
-                aboutWebView.putExtra(StaticResources.WEB_PAGE, "https://github.com/CDOrtona/Tesi");
-                startActivity(aboutWebView);
                 return true;
             default:
                 //item selected not recognized
@@ -295,7 +306,7 @@ public class MainActivity extends AppCompatActivity {
     public void stopScan(){
         scanning = false;
         bluetoothLeScanner.stopScan(leScanCallBack);
-        Log.d("stopScan", "BLE scanner has stopped");
+        Log.d("stopScan", "Scanner stopped");
     }
 
     //callBack method used to catch the result of startScan()

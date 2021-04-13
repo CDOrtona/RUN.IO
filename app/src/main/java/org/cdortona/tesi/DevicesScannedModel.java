@@ -18,7 +18,7 @@ public class DevicesScannedModel {
     //constructor
     DevicesScannedModel(String deviceName, String address, int rssi, int bondState) {
         if(deviceName == null){
-            this.deviceName = "Unknown";
+            this.deviceName = "ESP32";
         }
         else{
             this.deviceName = deviceName;
