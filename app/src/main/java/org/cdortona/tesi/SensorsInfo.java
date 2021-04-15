@@ -70,9 +70,6 @@ public class SensorsInfo extends AppCompatActivity {
     TextView brightnessValue;
     TextView positionValue;
 
-    //location
-    FusedLocationProviderClient locationProviderClient;
-    ArrayList<Location> locationList;
 
     //Toolbar
     Toolbar toolbar;
@@ -274,50 +271,7 @@ public class SensorsInfo extends AppCompatActivity {
         }
     };
 
-    public void locationUpdate() {
-        //this creates a location request with default parameters
-        LocationRequest locationRequest = LocationRequest.create();
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        locationProviderClient.requestLocationUpdates(locationRequest, locationCallBack, Looper.getMainLooper());
-    }
 
-    private final LocationCallback locationCallBack = new LocationCallback() {
-        @Override
-        public void onLocationResult(@NonNull LocationResult locationResult) {
-            super.onLocationResult(locationResult);
-            //this is similar to a for each loop that stores all the locations found in the location arrayList
-            locationList.addAll(locationResult.getLocations());
-        }
-    };
-
-    private void accessLocation(){
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 2);
-            Log.d(TAG, "Location permission disabled, sent request permission activation dialog");
-            accessLocation();
-        }
-        else {
-            Log.d(TAG, "Location permission enabled");
-            locationProviderClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                @Override
-                public void onSuccess(Location location) {
-                    //location is null if there is no known location found
-                    String position = "Lo: " + Math.round(location.getLongitude() * 100d) / 100d + '\n' + '\n'
-                            + "La: " + Math.round(location.getLatitude() * 100d) / 100d;
-                    positionValue.setText(position);
-                }
-            });
-        }
-    }
 
     //add an if that checks if the adaptor is connected to the GATT server already
     public void connectToGatt() {
