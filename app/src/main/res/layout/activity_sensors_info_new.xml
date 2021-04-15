@@ -160,7 +160,7 @@
             android:columnOrderPreserved="true"
             android:alignmentMode="alignMargins"
             android:rowCount="3"
-            android:columnCount="2">
+            android:columnCount="3">
 
             <androidx.cardview.widget.CardView
                 android:layout_height="wrap_content"
