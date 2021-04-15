@@ -1,10 +1,20 @@
-//
-// Created by Cristian on 21/03/2021.
-//
+/*Cristian D'Ortona
+    Tesi di Laurea
+*/
+
 #include <BLEDevice.h>
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include <BLE2902.h>
+
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BME280.h>
+#include <Wire.h>
+
+
+Adafruit_BME280 bme;
+
+#define SEALEVELPRESSURE_HPA (1013.25)
 
 BLEServer* pServer = NULL;
 BLECharacteristic* tempCharacteristic = NULL;
@@ -95,11 +105,20 @@ void setup() {
   pAdvertising->setMinPreferred(0x0);
   BLEDevice::startAdvertising();
   Serial.println("Waiting a client connection to notify...");
+
+  //BME280
+  bool  status = bme.begin(0x76);
+  Serial.print("BME280 status is:");
+  Serial.println(status);
+  Serial.println(bme.sensorID(), 16);
+  if(!status){
+    Serial.println("Could not find a valid BME280 sensor, check wiring, address, sensor ID!");
+  }
 }
 
 void loop() {
     // notify changed value
-    if (deviceConnected) {
+    /*if (deviceConnected) {
         if(Serial.available()>0){
           //pCharacteristic->setValue((uint8_t*)&value, 4);
 
@@ -116,6 +135,11 @@ void loop() {
           value++;
           delay(1000); // bluetooth stack will go into congestion, if too many packets are sent
         }
+    }*/
+
+    if(deviceConnected){
+      bme280Reading();
+      delay(3000);
     }
 
     //this is used in order to make the ESP32 advertise again once it disconnects from the Central
@@ -130,4 +154,23 @@ void loop() {
     if (deviceConnected && !oldDeviceConnected) {
         oldDeviceConnected = deviceConnected;
     }
+}
+
+void bme280Reading(){
+
+  float temp = bme.readTemperature();
+  std::string tempReading = String(temp, 2).c_str();
+  tempCharacteristic->setValue(tempReading);
+  tempCharacteristic->notify();
+  Serial.print("Temperature = ");
+  Serial.print(temp);
+  Serial.println(" *C");
+
+  float humidity = bme.readHumidity();
+  std::string humidityReading = String(humidity, 2).c_str();
+  brightnessCharacteristic->setValue(humidityReading);
+  brightnessCharacteristic->notify();
+  Serial.print("Humidity = ");
+  Serial.print(bme.readHumidity());
+  Serial.println(" %");
 }

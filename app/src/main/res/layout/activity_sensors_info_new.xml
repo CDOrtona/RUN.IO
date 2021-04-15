@@ -14,8 +14,9 @@
         app:title="RUN.IO" />
 
     <View
+        android:id="@+id/view_header"
         android:layout_width="match_parent"
-        android:layout_height="170dp"
+        android:layout_height="130dp"
         android:background="@drawable/wave_10"
         android:layout_below="@id/toolbar_sensors" />
 
@@ -24,10 +25,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/toolbar_sensors"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="5dp"
         android:layout_marginStart="20dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginBottom="20dp">
+        android:layout_marginEnd="20dp">
 
 
         <TextView
@@ -38,7 +38,7 @@
             android:text="Welcome Back,"
             android:textStyle="bold"
             android:textColor="@color/white"
-            android:textSize="25sp"/>
+            android:textSize="23sp"/>
 
         <TextView
             android:layout_width="wrap_content"
@@ -48,12 +48,12 @@
             android:text="Cristian"
             android:textStyle="bold"
             android:textColor="@color/background_info_box"
-            android:textSize="18sp"/>
+            android:textSize="16sp"/>
 
 
         <ImageView
-            android:layout_width="64dp"
-            android:layout_height="64dp"
+            android:layout_width="54dp"
+            android:layout_height="54dp"
             android:src="@drawable/profile_picture"
             android:layout_alignParentEnd="true"
             android:layout_marginTop="10dp"/>
@@ -149,7 +149,7 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/cardview_user_info">
+        android:layout_below="@id/view_header">
 
         <!--Grid layout which contains all the card views of each sensor-->
         <GridLayout
@@ -157,6 +157,7 @@
             android:layout_height="match_parent"
             android:columnOrderPreserved="true"
             android:alignmentMode="alignMargins"
+            android:layout_marginTop="35dp"
             android:rowCount="3"
             android:columnCount="2">
 
@@ -380,5 +381,7 @@
         </GridLayout>
 
     </ScrollView>
+
+
 
 </RelativeLayout>
