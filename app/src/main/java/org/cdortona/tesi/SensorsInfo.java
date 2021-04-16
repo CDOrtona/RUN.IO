@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.app.Activity;
@@ -22,6 +23,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -67,11 +69,8 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
     private String stateConnection = null;
     private boolean flagDeviceFound = false;
 
-    //flags used to tell which characteristic has changed
-    boolean tempChanged = false;
-    boolean heartChanged = false;
-
     //TextView initialization
+    TextView userName;
     TextView addressInfo;
     TextView nameInfo;
     TextView connectionState;
@@ -95,8 +94,14 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
     //Toolbar
     Toolbar toolbar;
 
+    //flags
+    boolean emergencyBoolean;
+
     //UserModel object
     UserModel user;
+
+    //preferences
+    SharedPreferences preferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,6 +109,7 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
         setContentView(R.layout.activity_sensors_info);
 
         //UI setup
+        userName = findViewById(R.id.user_name);
         addressInfo = findViewById(R.id.address_textView);
         nameInfo = findViewById(R.id.name_textView);
         connectionState = findViewById(R.id.connection_state_textView);
@@ -143,7 +149,22 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
         setSupportActionBar(toolbar);
 
         //preferences
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        preferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        //I need this so that when the app starts it knows which is the stored value of this preference
+        emergencyBoolean = preferences.getBoolean("emergency_checkbox", true);
+        preferences.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
+            @Override
+            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
+                switch (s){
+                    case "emergency_checkbox":
+                        emergencyBoolean = sharedPreferences.getBoolean("emergency_checkbox", false);
+                        break;
+                    case "user_name":
+                        userName.setText(sharedPreferences.getString("user_name", "cristian"));
+                        break;
+                }
+            }
+        });
         user = new UserModel();
         user.setName(preferences.getString("user_name", "Cristian"));
         user.setGender(preferences.getString("user_gender", "Male"));
@@ -158,6 +179,7 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
     @Override
     protected void onResume() {
         super.onResume();
+        userName.setText(user.getName());
         locationUpdate();
     }
 
@@ -179,6 +201,20 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
                 } catch (ActivityNotFoundException e){
                     e.printStackTrace();
                     finish();
+                }
+                return true;
+
+            case (R.id.action_emergency):
+                if(emergencyBoolean){
+                    //I have to make sure the user agrees with the permissions at run-time
+                    if(phoneCallPermissions()) {
+                        Intent callIntent = new Intent(Intent.ACTION_CALL);
+                        callIntent.setData(Uri.parse("tel:" + preferences.getString("relative_phone", "331")));
+                        startActivity(callIntent);
+                    }
+                } else {
+                    Toast.makeText(this, "Please enable the emergency button in the settings", Toast.LENGTH_LONG).show();
+                    return true;
                 }
                 return true;
             case (R.id.action_connect):
@@ -216,6 +252,33 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    //ask for phone call permissions
+    private final int MY_PERMISSIONS_REQUEST_CALL_PHONE = 1;
+    public boolean phoneCallPermissions(){
+        if (ContextCompat.checkSelfPermission(this,Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CALL_PHONE}, MY_PERMISSIONS_REQUEST_CALL_PHONE);
+
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    //result of the phone call permissions or any other permission
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_CALL_PHONE: {
+                // If request is cancelled, the result arrays are empty.
+                if (!(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    Toast.makeText(this, "Emergency Service won't work without permissions", Toast.LENGTH_SHORT).show();
+                    emergencyBoolean = false;
+                }
+                return;
+            }
         }
     }
 
@@ -288,7 +351,7 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
             final String broadcastReceived = intent.getAction();
             Log.d("bleBroadCastReceiver", "The received Broadcast is: " + broadcastReceived);
 
-            switch (broadcastReceived) {
+            switch (Objects.requireNonNull(broadcastReceived)) {
 
                 case StaticResources.ACTION_CONNECTION_STATE:
                     stateConnection = intent.getStringExtra(StaticResources.EXTRA_STATE_CONNECTION);
@@ -419,7 +482,6 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
 
     public void disconnectFromGatt() {
         stateConnection = null;
-        flagDeviceFound = false;
         connectToGattServer.disconnectGattServer();
         connectedToGatt = false;
         connectionStateString(StaticResources.STATE_DISCONNECTED);

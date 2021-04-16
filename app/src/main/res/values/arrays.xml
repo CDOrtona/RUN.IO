@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    
-    <string-array name="Name">
-        
-        
-    </string-array>
-    
+
     <string-array name="genderValues">
         <item>male</item>
         <item>female</item>

@@ -44,13 +44,5 @@
             android:dependency="emergency_checkbox"
             android:title="Relative's phone number"
             android:inputType="phone"/>
-        <EditTextPreference
-            android:defaultValue=""
-            android:key="relative_email"
-            android:selectAllOnFocus="true"
-            android:singleLine="true"
-            android:dependency="emergency_checkbox"
-            android:title="Relative's Email address"
-            android:inputType="textEmailAddress"/>
     </PreferenceCategory>
 </PreferenceScreen>
