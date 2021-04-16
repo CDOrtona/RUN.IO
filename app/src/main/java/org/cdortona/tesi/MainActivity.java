@@ -278,7 +278,7 @@ public class MainActivity extends AppCompatActivity {
             scanning = true;
 
             //filter for the scan activity
-            UUID[] serviceUUIDs = new UUID[]{UUID.fromString(StaticResources.ESP32_SERVICE)};
+            UUID[] serviceUUIDs = new UUID[]{UUID.fromString(StaticResources.ESP32_BME280_SERVICE)};
             List<ScanFilter> filters = null;
             filters = new ArrayList<>();
             for (UUID serviceUUID : serviceUUIDs) {

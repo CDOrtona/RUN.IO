@@ -16,6 +16,10 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -44,7 +48,7 @@ import java.util.ArrayList;
  */
 
 
-public class SensorsInfo extends AppCompatActivity {
+public class SensorsInfo extends AppCompatActivity implements SensorEventListener {
 
     private final String TAG = "SensorInfo";
 
@@ -62,17 +66,24 @@ public class SensorsInfo extends AppCompatActivity {
     boolean tempChanged = false;
     boolean heartChanged = false;
 
+    //TextView initialization
     TextView addressInfo;
     TextView nameInfo;
     TextView connectionState;
     TextView tempValue;
     TextView heartValue;
     TextView brightnessValue;
-    TextView positionValue;
+    TextView gpsValue;
+    TextView pressureValue;
+    TextView pedometerValue;
 
     //location
     FusedLocationProviderClient locationProviderClient;
     ArrayList<Location> locationList;
+
+    //sensors
+    SensorManager sensorManager;
+    Sensor pedometer;
 
     //Toolbar
     Toolbar toolbar;
@@ -80,7 +91,7 @@ public class SensorsInfo extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_sensors_info_new);
+        setContentView(R.layout.activity_sensors_info);
 
         //UI setup
         addressInfo = findViewById(R.id.address_textView);
@@ -89,7 +100,9 @@ public class SensorsInfo extends AppCompatActivity {
         tempValue = findViewById(R.id.textView_temp);
         heartValue = findViewById(R.id.textView_heart);
         brightnessValue = findViewById(R.id.textView_brightness);
-        positionValue = findViewById(R.id.textView_position);
+        gpsValue = findViewById(R.id.textView_position);
+        pressureValue = findViewById(R.id.pressure_text_view);
+        pedometerValue = findViewById(R.id.pedometer_text_view);
 
         //hard coded, I must change it later
         connectionState.setTextColor(Color.RED);
@@ -101,6 +114,11 @@ public class SensorsInfo extends AppCompatActivity {
         //location
         locationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         locationList = new ArrayList<>();
+
+        //built-in sensor
+        sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
+        pedometer = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
+
 
         //here I'm specifying the intent filters I want to subscribe to in order to get their updates
         IntentFilter intentFilter = new IntentFilter();
@@ -180,6 +198,7 @@ public class SensorsInfo extends AppCompatActivity {
             menu.findItem(R.id.action_disconnect).setVisible(true);
             menu.findItem(R.id.action_mqtt).setEnabled(true);
             accessLocation();
+            pedometerValue.setText(Integer.toString(0));
             return true;
         } else if (!connectedToGatt) {
             menu.findItem(R.id.action_connect).setVisible(true);
@@ -213,6 +232,24 @@ public class SensorsInfo extends AppCompatActivity {
         } else {
             flagDeviceFound = false;
         }
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        Sensor sensorChanged = event.sensor;
+        float[] values = event.values;
+        if(values.length > 0){
+            switch (sensorChanged.getType()){
+                case Sensor.TYPE_STEP_COUNTER:
+                    if(connectedToGatt)
+                        pedometerValue.setText(Float.toString(values[0]));
+            }
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
     }
 
     //this is used to receive the broadcast announcements that are being sent from the class ConnectToGattServer()
@@ -259,8 +296,11 @@ public class SensorsInfo extends AppCompatActivity {
                         case StaticResources.ESP32_HEARTH_CHARACTERISTIC:
                             heartValue.setText(intent.getStringExtra(StaticResources.EXTRA_HEART_VALUE));
                             break;
-                        case  StaticResources.ESP32_BRIGHTNESS_CHARACTERISTIC:
-                            brightnessValue.setText(intent.getStringExtra(StaticResources.EXTRA_BRIGHTNESS_VALUE));
+                        case  StaticResources.ESP32_HUMIDITY_CHARACTERISTIC:
+                            brightnessValue.setText(intent.getStringExtra(StaticResources.EXTRA_HUMIDITY_VALUE));
+                            break;
+                        case StaticResources.ESP32_PRESSURE_CHARACTERISTIC:
+                            pressureValue.setText(intent.getStringExtra(StaticResources.EXTRA_PRESSURE_VALUE));
                             break;
                     }
                     /*String onUpdateTempValue = intent.getStringExtra(StaticResources.EXTRA_TEMP_VALUE);
@@ -313,7 +353,7 @@ public class SensorsInfo extends AppCompatActivity {
                     //location is null if there is no known location found
                     String position = "Lo: " + Math.round(location.getLongitude() * 100d) / 100d + '\n' + '\n'
                             + "La: " + Math.round(location.getLatitude() * 100d) / 100d;
-                    positionValue.setText(position);
+                    gpsValue.setText(position);
                 }
             });
         }

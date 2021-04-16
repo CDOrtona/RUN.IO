@@ -34,11 +34,14 @@ class ConnectToGattServer {
 
     //GATT variables
     private BluetoothGatt gatt;
-    private BluetoothGattService gattService;
+    private BluetoothGattService gattBME280Service;
+    private BluetoothGattService gattHeartService;
     private List<BluetoothGattService> gattServicesList;
     private BluetoothGattCharacteristic gattCharacteristicTemp;
     private BluetoothGattCharacteristic gattCharacteristicHearth;
-    private BluetoothGattCharacteristic gattCharacteristicBrightness;
+    private BluetoothGattCharacteristic gattCharacteristicHumidity;
+    private BluetoothGattCharacteristic gattCharacteristicPressure;
+    private BluetoothGattCharacteristic gattCharacteristicAltitude;
     private List<BluetoothGattCharacteristic> gattCharacteristicsList;
 
     //Constructor which initializes the dependencies needed for the connection to the GATT server of the remote device(ESP32)
@@ -119,8 +122,11 @@ class ConnectToGattServer {
             }
 
             gattServicesList = gatt.getServices();
-            gattService = gatt.getService(UUID.fromString(StaticResources.ESP32_SERVICE));
-            gattCharacteristicsList = gattService.getCharacteristics();
+            gattBME280Service = gatt.getService(UUID.fromString(StaticResources.ESP32_BME280_SERVICE));
+            gattHeartService = gatt.getService(UUID.fromString(StaticResources.ESP32_HEART_SERVICE));
+            gattCharacteristicsList = gattBME280Service.getCharacteristics();
+            gattCharacteristicHearth = gattHeartService.getCharacteristic(UUID.fromString(StaticResources.ESP32_HEARTH_CHARACTERISTIC));
+            gattCharacteristicsList.add(gattCharacteristicHearth);
 
             //debug
             for (int i = 1; i < gattServicesList.size(); i++) {
@@ -143,11 +149,23 @@ class ConnectToGattServer {
 
                         break;
 
-                    case StaticResources.ESP32_BRIGHTNESS_CHARACTERISTIC:
-                        gattCharacteristicBrightness = gattCharacteristicsList.get(i);
+                    case StaticResources.ESP32_HUMIDITY_CHARACTERISTIC:
+                        gattCharacteristicHumidity = gattCharacteristicsList.get(i);
                         Log.d("assignCharacteristics", "characteristic has been assigned correctly, " +
                                 +'\n' + "UUID: " + gattCharacteristicsList.get(i).getUuid());
 
+                        break;
+
+                    case StaticResources.ESP32_PRESSURE_CHARACTERISTIC:
+                        gattCharacteristicPressure = gattCharacteristicsList.get(i);
+                        Log.d("assignCharacteristics", "characteristic has been assigned correctly, " +
+                                +'\n' + "UUID: " + gattCharacteristicsList.get(i).getUuid());
+                        break;
+
+                    case StaticResources.ESP32_ALTITUDE_CHARACTERISTIC:
+                        gattCharacteristicAltitude = gattCharacteristicsList.get(i);
+                        Log.d("assignCharacteristics", "characteristic has been assigned correctly, " +
+                                +'\n' + "UUID: " + gattCharacteristicsList.get(i).getUuid());
                         break;
 
                     default:
@@ -223,19 +241,27 @@ class ConnectToGattServer {
                 intent.putExtra(StaticResources.EXTRA_HEART_VALUE, heartMessage);
                 mContext.sendBroadcast(intent);
                 break;
-            case StaticResources.ESP32_BRIGHTNESS_CHARACTERISTIC:
-                byte[] brightnessData = characteristic.getValue();
-                String brightnessMessage = new String(brightnessData);
+            case StaticResources.ESP32_HUMIDITY_CHARACTERISTIC:
+                byte[] humidityData = characteristic.getValue();
+                String humidityMessage = new String(humidityData);
                 intent.putExtra(StaticResources.EXTRA_CHARACTERISTIC_CHANGED, characteristic.getUuid().toString());
-                intent.putExtra(StaticResources.EXTRA_BRIGHTNESS_VALUE, brightnessMessage);
+                intent.putExtra(StaticResources.EXTRA_HUMIDITY_VALUE, humidityMessage);
                 mContext.sendBroadcast(intent);
                 break;
+            case StaticResources.ESP32_PRESSURE_CHARACTERISTIC:
+                byte[] pressureData = characteristic.getValue();
+                String pressureMessage = new String(pressureData);
+                intent.putExtra(StaticResources.EXTRA_CHARACTERISTIC_CHANGED, characteristic.getUuid().toString());
+                intent.putExtra(StaticResources.EXTRA_PRESSURE_VALUE, pressureMessage);
+                mContext.sendBroadcast(intent);
+                break;
+            case StaticResources.ESP32_ALTITUDE_CHARACTERISTIC:
+                byte[] altitudeData = characteristic.getValue();
+                String altitudeMessage = new String(altitudeData);
+                intent.putExtra(StaticResources.EXTRA_CHARACTERISTIC_CHANGED, characteristic.getUuid().toString());
+                intent.putExtra(StaticResources.EXTRA_ALTITUDE_VALUE, altitudeMessage);
+                mContext.sendBroadcast(intent);
         }
-    }
-
-    //this method is used to find the predefined characteristics and then assign them to their BluetoothGattCharacteristic objects
-    private void assignCharacteristics(List<BluetoothGattCharacteristic> foundCharacteristics) {
-
     }
 
     //in order to use the notify property of the characteristic, a descriptor has been defined which lets the client

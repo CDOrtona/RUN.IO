@@ -13,10 +13,13 @@ final class StaticResources {
 
     //ESP32 info
     static final String ESP32_ADDRESS = "30:AE:A4:F5:88:6E";
-    static final String ESP32_SERVICE = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
+    static final String ESP32_BME280_SERVICE = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
+    static final String ESP32_HEART_SERVICE = "9c100603-509a-42ae-a22a-f5ba9e9c9d94";
     static final String ESP32_TEMP_CHARACTERISTIC = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
     static final String ESP32_HEARTH_CHARACTERISTIC = "5ebad8b8-8128-11eb-8dcd-0242ac130003";
-    static final String ESP32_BRIGHTNESS_CHARACTERISTIC = "3935a44c-81c3-11eb-8dcd-0242ac130003";
+    static final String ESP32_HUMIDITY_CHARACTERISTIC = "3935a44c-81c3-11eb-8dcd-0242ac130003";
+    static final String ESP32_PRESSURE_CHARACTERISTIC = "605958dd-bf4b-4d0b-a237-3875db31466c";
+    static final String ESP32_ALTITUDE_CHARACTERISTIC = "f28c3ced-d0ce-41ab-87d4-23cc4f0dc9df";
     //client characteristic configuration which is used to by the client in order to configure the
     //Indicate or Notify property of that specified characteristic
     static final String ESP32_DESCRIPTOR = "00002902-0000-1000-8000-00805f9b34fb";
@@ -30,7 +33,9 @@ final class StaticResources {
     static final String EXTRA_STATE_CONNECTION = PACKAGE_NAME + "keyConnection";
     static final String EXTRA_TEMP_VALUE = PACKAGE_NAME + "tempValue";
     static final String EXTRA_HEART_VALUE = PACKAGE_NAME + "heartValue";
-    static final String EXTRA_BRIGHTNESS_VALUE = PACKAGE_NAME + "brightnessValue";
+    static final String EXTRA_HUMIDITY_VALUE = PACKAGE_NAME + "humidityValue";
+    static final String EXTRA_PRESSURE_VALUE = PACKAGE_NAME + "pressureValue";
+    static final String EXTRA_ALTITUDE_VALUE = PACKAGE_NAME + "altitudeValue";
     static final String EXTRA_CHARACTERISTIC_CHANGED = PACKAGE_NAME + "characteristicToBeNotified";
 
     //values for the putExtra method
