@@ -76,6 +76,7 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
     TextView gpsValue;
     TextView pressureValue;
     TextView pedometerValue;
+    TextView altitudeValue;
 
     //location
     FusedLocationProviderClient locationProviderClient;
@@ -103,6 +104,7 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
         gpsValue = findViewById(R.id.textView_position);
         pressureValue = findViewById(R.id.pressure_text_view);
         pedometerValue = findViewById(R.id.pedometer_text_view);
+        altitudeValue = findViewById(R.id.altitude_text_view);
 
         //hard coded, I must change it later
         connectionState.setTextColor(Color.RED);
@@ -302,6 +304,9 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
                         case StaticResources.ESP32_PRESSURE_CHARACTERISTIC:
                             pressureValue.setText(intent.getStringExtra(StaticResources.EXTRA_PRESSURE_VALUE));
                             break;
+                        case StaticResources.ESP32_ALTITUDE_CHARACTERISTIC:
+                            altitudeValue.setText(intent.getStringExtra(StaticResources.EXTRA_ALTITUDE_VALUE));
+                            break;
                     }
                     /*String onUpdateTempValue = intent.getStringExtra(StaticResources.EXTRA_TEMP_VALUE);
                     String onUpdateHeartValue = intent.getStringExtra(StaticResources.EXTRA_HEART_VALUE);
@@ -351,8 +356,8 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
                 @Override
                 public void onSuccess(Location location) {
                     //location is null if there is no known location found
-                    String position = "Lo: " + Math.round(location.getLongitude() * 100d) / 100d + '\n' + '\n'
-                            + "La: " + Math.round(location.getLatitude() * 100d) / 100d;
+                    String position = "Lo: " + Math.round(location.getLongitude() * 100d) / 100d + '\n' +
+                             "La: " + Math.round(location.getLatitude() * 100d) / 100d;
                     gpsValue.setText(position);
                 }
             });

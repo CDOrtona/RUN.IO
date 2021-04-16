@@ -326,12 +326,12 @@
                     <ImageView
                         android:layout_width="64dp"
                         android:layout_height="64dp"
-                        android:src="@drawable/ic_pressure_gauge">
+                        android:src="@drawable/altitude">
 
                     </ImageView>
 
                     <TextView
-
+                        android:id="@+id/altitude_text_view"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="center"
@@ -362,7 +362,7 @@
                     <ImageView
                         android:layout_width="64dp"
                         android:layout_height="64dp"
-                        android:src="@drawable/altitude">
+                        android:src="@drawable/pressure">
 
                     </ImageView>
 
