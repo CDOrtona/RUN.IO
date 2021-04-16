@@ -1,7 +1,6 @@
 /*Cristian D'Ortona
     Tesi di Laurea
 */
-
 #include <BLEDevice.h>
 #include <BLEServer.h>
 #include <BLEUtils.h>
@@ -20,14 +19,19 @@ BLEServer* pServer = NULL;
 BLECharacteristic* tempCharacteristic = NULL;
 BLECharacteristic* heartCharacteristic = NULL;
 BLECharacteristic* brightnessCharacteristic = NULL;
+BLECharacteristic* pressureCharacteristic = NULL;
+BLECharacteristic* altitudeCharacteristic = NULL;
 bool deviceConnected = false;
 bool oldDeviceConnected = false;
 uint32_t value = 0;
 
-#define SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
+#define BME280_SERVICE        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
+#define HEART_SERVICE "9c100603-509a-42ae-a22a-f5ba9e9c9d94"
 #define CHARACTERISTIC_TEMP "beb5483e-36e1-4688-b7f5-ea07361b26a8"
 #define CHARACTERISTIC_HEART "5ebad8b8-8128-11eb-8dcd-0242ac130003"
 #define CHARACTERISTIC_BRIGHTNESS "3935a44c-81c3-11eb-8dcd-0242ac130003"
+#define CHARACTERISTIC_PRESSURE "605958dd-bf4b-4d0b-a237-3875db31466c"
+#define CHARACTERISTIC_ALTITUDE "f28c3ced-d0ce-41ab-87d4-23cc4f0dc9df"
 
 
 class MyServerCallbacks: public BLEServerCallbacks {
@@ -61,11 +65,13 @@ void setup() {
   pServer = BLEDevice::createServer();
   pServer->setCallbacks(new MyServerCallbacks());
 
-  // Create the BLE Service
-  BLEService *pService = pServer->createService(SERVICE_UUID);
+  // Create the BME280 and heart Service
+  BLEService *bme280Service = pServer->createService(BME280_SERVICE);
+  BLEService *heartService = pServer->createService(HEART_SERVICE);
+
 
   // Create a BLE temp Characteristic
-  tempCharacteristic = pService->createCharacteristic(
+  tempCharacteristic = bme280Service->createCharacteristic(
                       CHARACTERISTIC_TEMP,
                       BLECharacteristic::PROPERTY_READ |
                       BLECharacteristic::PROPERTY_NOTIFY
@@ -76,7 +82,7 @@ void setup() {
   tempCharacteristic->addDescriptor(new BLE2902());
 
   //crete BLE heart Characteristic
-  heartCharacteristic = pService->createCharacteristic(
+  heartCharacteristic = heartService->createCharacteristic(
                         CHARACTERISTIC_HEART,
                         BLECharacteristic::PROPERTY_READ |
                         BLECharacteristic::PROPERTY_NOTIFY
@@ -87,7 +93,7 @@ void setup() {
   heartCharacteristic->addDescriptor(new BLE2902());
 
   //create a BLE brightness characteristic
-  brightnessCharacteristic = pService->createCharacteristic(
+  brightnessCharacteristic = bme280Service->createCharacteristic(
                             CHARACTERISTIC_BRIGHTNESS,
                             BLECharacteristic::PROPERTY_READ |
                             BLECharacteristic::PROPERTY_NOTIFY
@@ -95,12 +101,37 @@ void setup() {
 
   brightnessCharacteristic->addDescriptor(new BLE2902());
 
+   //crete BLE pressure Characteristic
+  pressureCharacteristic = bme280Service->createCharacteristic(
+                        CHARACTERISTIC_PRESSURE,
+                        BLECharacteristic::PROPERTY_READ |
+                        BLECharacteristic::PROPERTY_NOTIFY
+                        );
+
+  //create a BLE descriptor for the heart characteristic
+  //0x2902 is the standard for Client Characteristic configuration Descriptor (CCCD)
+  pressureCharacteristic->addDescriptor(new BLE2902());
+
+ // Create a BLE altitude Characteristic
+  altitudeCharacteristic = bme280Service->createCharacteristic(
+                      CHARACTERISTIC_ALTITUDE,
+                      BLECharacteristic::PROPERTY_READ |
+                      BLECharacteristic::PROPERTY_NOTIFY
+                    );
+
+
+  // Create a BLE Descriptor for the temp characteristic
+  altitudeCharacteristic->addDescriptor(new BLE2902());
+
+
   // Start the service
-  pService->start();
+  bme280Service->start();
+  heartService->start();
 
   // Start advertising
   BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
-  pAdvertising->addServiceUUID(SERVICE_UUID);
+  pAdvertising->addServiceUUID(BME280_SERVICE);
+  pAdvertising->addServiceUUID(HEART_SERVICE);
   pAdvertising->setScanResponse(true);
   pAdvertising->setMinPreferred(0x0);
   BLEDevice::startAdvertising();
@@ -118,24 +149,6 @@ void setup() {
 
 void loop() {
     // notify changed value
-    /*if (deviceConnected) {
-        if(Serial.available()>0){
-          //pCharacteristic->setValue((uint8_t*)&value, 4);
-
-          std::string message = Serial.readString().c_str();
-          tempCharacteristic->setValue(message);
-          tempCharacteristic->notify();
-          delay(1000);
-          heartCharacteristic->setValue(message);
-          heartCharacteristic->notify();
-          delay(1000);
-          brightnessCharacteristic->setValue(message);
-          brightnessCharacteristic->notify();
-
-          value++;
-          delay(1000); // bluetooth stack will go into congestion, if too many packets are sent
-        }
-    }*/
 
     if(deviceConnected){
       bme280Reading();
@@ -171,6 +184,30 @@ void bme280Reading(){
   brightnessCharacteristic->setValue(humidityReading);
   brightnessCharacteristic->notify();
   Serial.print("Humidity = ");
-  Serial.print(bme.readHumidity());
+  Serial.print(humidity);
   Serial.println(" %");
+
+  float pressure = bme.readPressure();
+  std::string pressureReading = String(pressure, 2).c_str();
+  pressureCharacteristic->setValue(pressureReading);
+  pressureCharacteristic->notify();
+  Serial.print("Humidity = ");
+  Serial.print(pressure);
+  Serial.println("hPa");
+
+  float altitude = getAltitude(SEALEVELPRESSURE_HPA);
+  std::string altitudeReading = String(altitude, 2).c_str();
+  altitudeCharacteristic->setValue(altitudeReading);
+  altitudeCharacteristic->notify();
+  Serial.print("Altitude = ");
+  Serial.print(altitude);
+  Serial.println("m");
+}
+
+
+//page 16
+//https://cdn-shop.adafruit.com/datasheets/BST-BMP180-DS000-09.pdf
+float getAltitude(float seaLevel){
+  float atmospheric = bme.readPressure() / 100.0F;
+  return 44330.0 * (1.0 - pow(atmospheric / seaLevel, 0.1903));
 }
