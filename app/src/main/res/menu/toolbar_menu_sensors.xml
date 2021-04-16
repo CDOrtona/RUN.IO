@@ -12,6 +12,11 @@
         app:showAsAction="never"
         android:enabled="true"/>
 
+    <item android:id="@+id/action_mqtt"
+        android:title="@string/toolbar_sensors_mqtt"
+        app:showAsAction="never"
+        android:enabled="false"/>
+
     <item
         android:id="@+id/action_disconnect"
         android:title="@string/menu_disconnect"
@@ -22,10 +27,10 @@
         android:title="@string/toolbar_sensors_rssi"
         app:showAsAction="never"/>
 
-    <item android:id="@+id/action_mqtt"
-        android:title="@string/toolbar_sensors_mqtt"
+    <item android:id="@+id/action_settings"
+        android:title="Settings"
         app:showAsAction="never"
-        android:enabled="false"/>
+        android:enabled="true"/>
 
     <item android:id="@+id/action_about"
         android:title="@string/toolbar_main_about"

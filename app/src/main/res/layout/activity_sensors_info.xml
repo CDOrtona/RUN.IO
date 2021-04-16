@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main_layout"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto">
@@ -40,6 +41,7 @@
             android:textSize="23sp"/>
 
         <TextView
+            android:id="@+id/user_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/text_dashboard"
@@ -146,308 +148,326 @@
 
     </androidx.cardview.widget.CardView>
 
-    <ScrollView
-        android:id="@+id/scrollView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/cardview_user_info">
-
-        <!--Grid layout which contains all the card views of each sensor-->
-        <GridLayout
-            android:id="@+id/gridView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:columnOrderPreserved="true"
-            android:alignmentMode="alignMargins"
-            android:rowCount="3"
-            android:columnCount="2">
-
-            <androidx.cardview.widget.CardView
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_rowWeight="1"
-                app:cardElevation="8dp"
-                app:cardCornerRadius="12dp"
-                android:layout_margin="12dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:padding="16dp">
-
-                    <ImageView
-                        android:layout_width="64dp"
-                        android:layout_height="64dp"
-                        android:src="@drawable/temperature_vector">
-
-                    </ImageView>
-
-                    <TextView
-                        android:id="@+id/textView_temp"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:layout_marginTop="12dp"
-                        android:gravity="center"
-                        android:text="null"
-                        android:textSize="15sp" />
-
-                </LinearLayout>
-
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_rowWeight="1"
-                app:cardElevation="6dp"
-                app:cardCornerRadius="12dp"
-                android:layout_margin="12dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:padding="16dp">
-
-                    <ImageView
-                        android:layout_width="64dp"
-                        android:layout_height="64dp"
-                        android:src="@drawable/heartbeat_vector">
-
-                    </ImageView>
-
-                    <TextView
-                        android:id="@+id/textView_heart"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:gravity="center"
-                        android:layout_marginTop="12dp"
-                        android:text="null"
-                        android:textSize="15sp"/>
-
-                </LinearLayout>
-
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_rowWeight="1"
-                app:cardElevation="6dp"
-                app:cardCornerRadius="12dp"
-                android:layout_margin="12dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:padding="16dp">
-
-                    <ImageView
-                        android:layout_width="64dp"
-                        android:layout_height="64dp"
-                        android:src="@drawable/humidity_vector">
-
-                    </ImageView>
-
-                    <TextView
-                        android:id="@+id/textView_brightness"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:gravity="center"
-                        android:text="null"
-                        android:textSize="15sp"/>
-
-
-                </LinearLayout>
-
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_rowWeight="1"
-                app:cardElevation="6dp"
-                app:cardCornerRadius="12dp"
-                android:layout_margin="12dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <ImageView
-                        android:layout_width="64dp"
-                        android:layout_height="64dp"
-                        android:src="@drawable/gps_vector">
-
-                    </ImageView>
-
-                    <TextView
-                        android:id="@+id/textView_position"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:layout_marginTop="12dp"
-                        android:gravity="center"
-                        android:text="null"
-                        android:textSize="15sp" />
-
-                </LinearLayout>
-
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_rowWeight="1"
-                app:cardElevation="6dp"
-                app:cardCornerRadius="12dp"
-                android:layout_margin="12dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:padding="16dp">
-
-                    <ImageView
-                        android:layout_width="64dp"
-                        android:layout_height="64dp"
-                        android:src="@drawable/altitude">
-
-                    </ImageView>
-
-                    <TextView
-                        android:id="@+id/altitude_text_view"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:layout_marginTop="12dp"
-                        android:text="null"
-                        android:textSize="15sp"/>
-
-                </LinearLayout>
-
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_rowWeight="1"
-                app:cardElevation="6dp"
-                app:cardCornerRadius="12dp"
-                android:layout_margin="12dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:padding="16dp">
-
-                    <ImageView
-                        android:layout_width="64dp"
-                        android:layout_height="64dp"
-                        android:src="@drawable/pressure">
-
-                    </ImageView>
-
-                    <TextView
-                        android:id="@+id/pressure_text_view"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:layout_marginTop="12dp"
-                        android:text="null"
-                        android:textSize="15sp"/>
-
-                </LinearLayout>
-
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_rowWeight="1"
-                app:cardElevation="6dp"
-                app:cardCornerRadius="12dp"
-                android:layout_margin="12dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:padding="16dp">
-
-                    <ImageView
-                        android:layout_width="64dp"
-                        android:layout_height="64dp"
-                        android:src="@drawable/walk">
-
-                    </ImageView>
-
-                    <TextView
-                        android:id="@+id/pedometer_text_view"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:layout_marginTop="12dp"
-                        android:text="null"
-                        android:textSize="15sp"/>
-
-                </LinearLayout>
-
-            </androidx.cardview.widget.CardView>
-
-
-        </GridLayout>
-
-    </ScrollView>
-
-    <com.google.android.material.card.MaterialCardView
+    <LinearLayout
+        android:id="@+id/layout_scroll_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardCornerRadius="10dp"
-        app:cardElevation="8dp"
-        android:layout_margin="20dp"
-        android:layout_alignBottom="@id/scrollView"
-        >
+        android:layout_below="@id/cardview_user_info">
 
-        <RelativeLayout
+        <ScrollView
+            android:id="@+id/scrollView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@drawable/gradient_calories">
+            android:layout_height="match_parent">
 
-            <TextView
+            <!--Grid layout which contains all the card views of each sensor-->
+            <GridLayout
+                android:id="@+id/gridView"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Calories Burnt"
-                android:textStyle="bold"
-                android:textColor="#B14848"
-                android:gravity="center"/>
+                android:layout_height="match_parent"
+                android:columnOrderPreserved="true"
+                android:alignmentMode="alignMargins"
+                android:rowCount="3"
+                android:columnCount="2">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_rowWeight="1"
+                    app:cardElevation="8dp"
+                    app:cardCornerRadius="12dp"
+                    android:layout_margin="12dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="16dp">
+
+                        <ImageView
+                            android:layout_width="64dp"
+                            android:layout_height="64dp"
+                            android:src="@drawable/temperature_vector">
+
+                        </ImageView>
+
+                        <TextView
+                            android:id="@+id/textView_temp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_marginTop="12dp"
+                            android:gravity="center"
+                            android:text="null"
+                            android:textSize="15sp" />
+
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_rowWeight="1"
+                    app:cardElevation="6dp"
+                    app:cardCornerRadius="12dp"
+                    android:layout_margin="12dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="16dp">
+
+                        <ImageView
+                            android:layout_width="64dp"
+                            android:layout_height="64dp"
+                            android:src="@drawable/heartbeat_vector">
+
+                        </ImageView>
+
+                        <TextView
+                            android:id="@+id/textView_heart"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:layout_marginTop="12dp"
+                            android:text="null"
+                            android:textSize="15sp"/>
+
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_rowWeight="1"
+                    app:cardElevation="6dp"
+                    app:cardCornerRadius="12dp"
+                    android:layout_margin="12dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="16dp">
+
+                        <ImageView
+                            android:layout_width="64dp"
+                            android:layout_height="64dp"
+                            android:src="@drawable/humidity_vector">
+
+                        </ImageView>
+
+                        <TextView
+                            android:id="@+id/textView_brightness"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:gravity="center"
+                            android:text="null"
+                            android:textSize="15sp"/>
 
 
-        </RelativeLayout>
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_rowWeight="1"
+                    app:cardElevation="6dp"
+                    app:cardCornerRadius="12dp"
+                    android:layout_margin="12dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <ImageView
+                            android:layout_width="64dp"
+                            android:layout_height="64dp"
+                            android:src="@drawable/gps_vector">
+
+                        </ImageView>
+
+                        <TextView
+                            android:id="@+id/textView_position"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_marginTop="12dp"
+                            android:gravity="center"
+                            android:text="null"
+                            android:textSize="15sp" />
+
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_rowWeight="1"
+                    app:cardElevation="6dp"
+                    app:cardCornerRadius="12dp"
+                    android:layout_margin="12dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="16dp">
+
+                        <ImageView
+                            android:layout_width="64dp"
+                            android:layout_height="64dp"
+                            android:src="@drawable/altitude">
+
+                        </ImageView>
+
+                        <TextView
+                            android:id="@+id/altitude_text_view"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:layout_marginTop="12dp"
+                            android:text="null"
+                            android:textSize="15sp"/>
+
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_rowWeight="1"
+                    app:cardElevation="6dp"
+                    app:cardCornerRadius="12dp"
+                    android:layout_margin="12dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="16dp">
+
+                        <ImageView
+                            android:layout_width="64dp"
+                            android:layout_height="64dp"
+                            android:src="@drawable/pressure">
+
+                        </ImageView>
+
+                        <TextView
+                            android:id="@+id/pressure_text_view"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:layout_marginTop="12dp"
+                            android:text="null"
+                            android:textSize="15sp"/>
+
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_rowWeight="1"
+                    app:cardElevation="6dp"
+                    app:cardCornerRadius="12dp"
+                    android:layout_margin="12dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="16dp">
+
+                        <ImageView
+                            android:layout_width="64dp"
+                            android:layout_height="64dp"
+                            android:src="@drawable/walk">
+
+                        </ImageView>
+
+                        <TextView
+                            android:id="@+id/pedometer_text_view"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:layout_marginTop="12dp"
+                            android:text="null"
+                            android:textSize="15sp"/>
+
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
 
 
+                <androidx.cardview.widget.CardView
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_rowWeight="1"
+                    app:cardElevation="6dp"
+                    app:cardCornerRadius="12dp"
+                    android:layout_margin="12dp"
+                    android:onClick="calculateCalories">
 
-    </com.google.android.material.card.MaterialCardView>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="16dp"
+                        android:background="@color/gradientEnd">
+
+                        <ImageView
+                            android:layout_width="64dp"
+                            android:layout_height="64dp"
+                            android:src="@drawable/burnt_calories">
+
+                        </ImageView>
+
+                        <TextView
+                            android:id="@+id/calories_text_view"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:layout_marginTop="12dp"
+                            android:text="Start Counting Calories "
+                            android:textColor="@color/white"
+                            android:textSize="15sp"/>
+
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
+
+
+            </GridLayout>
+
+        </ScrollView>
+
+    </LinearLayout>
 
 
 

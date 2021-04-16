@@ -13,6 +13,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -24,10 +25,13 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,6 +43,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  * Cristian D'Ortona
@@ -77,6 +82,7 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
     TextView pressureValue;
     TextView pedometerValue;
     TextView altitudeValue;
+    TextView calories;
 
     //location
     FusedLocationProviderClient locationProviderClient;
@@ -88,6 +94,9 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
 
     //Toolbar
     Toolbar toolbar;
+
+    //UserModel object
+    UserModel user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,6 +114,7 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
         pressureValue = findViewById(R.id.pressure_text_view);
         pedometerValue = findViewById(R.id.pedometer_text_view);
         altitudeValue = findViewById(R.id.altitude_text_view);
+        calories = findViewById(R.id.calories_text_view);
 
         //hard coded, I must change it later
         connectionState.setTextColor(Color.RED);
@@ -131,6 +141,18 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
         //Toolbar
         toolbar = findViewById(R.id.toolbar_sensors);
         setSupportActionBar(toolbar);
+
+        //preferences
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        user = new UserModel();
+        user.setName(preferences.getString("user_name", "Cristian"));
+        user.setGender(preferences.getString("user_gender", "Male"));
+        user.setAge(preferences.getString("user_age", "23"));
+        user.setWeight(preferences.getString("user_weight", "85"));
+        //user.setWeight(preferences.getInt("user_weight", 85));
+        /*user = new UserModel(preferences.getString("user_name", "Cristian"),
+                preferences.getString("user_gender", "Male"), preferences.getInt("user_age", 23),
+                preferences.getInt("user_weight", 85));*/
     }
 
     @Override
@@ -181,6 +203,10 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
             case (R.id.action_mqtt):
                 Toast.makeText(this, "Send data to Cloud", Toast.LENGTH_SHORT).show();
                 //MQTT
+                return true;
+
+            case (R.id.action_settings):
+                startActivity(new Intent(this, Settings.class));
                 return true;
 
             case (R.id.action_about):
@@ -278,18 +304,6 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
                     break;
                 //this received broadcast lets the activity that subbed to this intent filter know which is the characteristic that has changed
                 case StaticResources.ACTION_CHARACTERISTIC_CHANGED_READ:
-                    /*String notifiedCharacteristic = intent.getStringExtra(StaticResources.EXTRA_CHARACTERISTIC_NOTIFIED);
-                    Log.d(TAG, "Characteristic notified: " + notifiedCharacteristic);
-                    if (notifiedCharacteristic.equals(StaticResources.ESP32_TEMP_CHARACTERISTIC)) {
-                        Log.d(TAG, "Characteristic is Temp");
-                        tempChanged = true;
-                        heartChanged = false;
-                    } else if (notifiedCharacteristic.equals(StaticResources.ESP32_HEARTH_CHARACTERISTIC)) {
-                        tempChanged = false;
-                        heartChanged = true;
-                        Log.d(TAG, "Characteristic is Heart");
-                    }
-                    break;*/
                     Log.d("whichCharChanged", StaticResources.EXTRA_CHARACTERISTIC_CHANGED);
                     switch (intent.getStringExtra(StaticResources.EXTRA_CHARACTERISTIC_CHANGED)){
                         case StaticResources.ESP32_TEMP_CHARACTERISTIC:
@@ -308,16 +322,33 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
                             altitudeValue.setText(intent.getStringExtra(StaticResources.EXTRA_ALTITUDE_VALUE));
                             break;
                     }
-                    /*String onUpdateTempValue = intent.getStringExtra(StaticResources.EXTRA_TEMP_VALUE);
-                    String onUpdateHeartValue = intent.getStringExtra(StaticResources.EXTRA_HEART_VALUE);
-                    String onUpdateBrightnessValue = intent.getStringExtra(StaticResources.EXTRA_BRIGHTNESS_VALUE);
-                    tempValue.setText(onUpdateTempValue);
-                    heartValue.setText(onUpdateHeartValue);
-                    brightnessValue.setText(onUpdateBrightnessValue);*/
             }
-
         }
     };
+
+    boolean fitnessActivityStarted = false;
+    //pop up menu to choose fitness activity
+    public void calculateCalories(View view){
+        if(!fitnessActivityStarted){
+            fitnessActivityStarted = true;
+            calories.setText("0 Kcal");
+            PopupMenu popupMenu = new PopupMenu(getApplicationContext(), view);
+            popupMenu.getMenuInflater().inflate(R.menu.popup_menu_calories, popupMenu.getMenu());
+
+            popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+                    FitnessTracker.calculateCalories(item.getTitle().toString());
+                    return true;
+                }
+            });
+            popupMenu.show();
+        } else {
+            String text = FitnessTracker.stopFitnessActivity(user) + "KCal";
+            calories.setText(text);
+            fitnessActivityStarted = false;
+        }
+    }
 
     public void locationUpdate() {
         //this creates a location request with default parameters
