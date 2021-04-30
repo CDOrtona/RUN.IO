@@ -1,5 +1,12 @@
 package org.cdortona.tesi;
 
+/**
+ * Cristian D'Ortona
+ *
+ * TESI DI LAUREA IN INGEGNERIA ELETTRONICA E DELLE TELECOMUNICAZIONI
+ *
+ */
+
 public class UserModel {
 
     private String name;

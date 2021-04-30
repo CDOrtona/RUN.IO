@@ -12,7 +12,7 @@
         android:background="@color/colorPrimary"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         app:popupTheme="@style/AppTheme.PopupOverlay"
-        app:title="RUN.IO" />
+        app:title="Tesi"/>
 
     <View
         android:id="@+id/view_header"

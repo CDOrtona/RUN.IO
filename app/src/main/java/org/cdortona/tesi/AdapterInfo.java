@@ -16,6 +16,13 @@ import android.widget.TextView;
 
 import java.util.Objects;
 
+/**
+ * Cristian D'Ortona
+ *
+ * TESI DI LAUREA IN INGEGNERIA ELETTRONICA E DELLE TELECOMUNICAZIONI
+ *
+ */
+
 public class AdapterInfo extends AppCompatActivity {
 
     //Toolbar

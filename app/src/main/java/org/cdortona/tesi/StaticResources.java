@@ -12,7 +12,7 @@ final class StaticResources {
     private static final String PACKAGE_NAME = "com.cdortona.tesi";
 
     //ESP32 info
-    static final String ESP32_ADDRESS = "30:AE:A4:F5:88:6E";
+    //static final String ESP32_ADDRESS = "30:AE:A4:F5:88:6E";
     static final String ESP32_BME280_SERVICE = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
     static final String ESP32_HEART_SERVICE = "9c100603-509a-42ae-a22a-f5ba9e9c9d94";
     static final String ESP32_TEMP_CHARACTERISTIC = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
@@ -26,7 +26,7 @@ final class StaticResources {
 
     //Broadcaster Intent Actions what will be received by the broadcast receiver
     static final String ACTION_CONNECTION_STATE = PACKAGE_NAME + ".connectionState";
-    static final String ACTION_CHARACTERISTIC_CHANGED = PACKAGE_NAME + ".characteristicChanged";
+    //static final String ACTION_CHARACTERISTIC_CHANGED = PACKAGE_NAME + ".characteristicChanged";
     static final String ACTION_CHARACTERISTIC_CHANGED_READ = PACKAGE_NAME + "characteristicChangedRead";
 
     //Keys for the putExtra method

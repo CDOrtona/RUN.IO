@@ -7,6 +7,13 @@ import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 
+/**
+ * Cristian D'Ortona
+ *
+ * TESI DI LAUREA IN INGEGNERIA ELETTRONICA E DELLE TELECOMUNICAZIONI
+ *
+ */
+
 public class Settings extends PreferenceActivity {
 
     @Override

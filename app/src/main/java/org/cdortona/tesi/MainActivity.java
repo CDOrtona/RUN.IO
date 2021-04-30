@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
 
     //this end the scan every 10 seconds
     //it's very important as in a LE application we want to reduce battery-intensive tasks
-    private static final long SCAN_PERIOD = 10000;
+    private static final long SCAN_PERIOD = 5000;
 
     //noBlueooth Icon
     ImageView noBluetoothIcon;
