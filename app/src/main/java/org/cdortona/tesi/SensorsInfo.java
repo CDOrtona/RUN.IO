@@ -44,6 +44,8 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -102,6 +104,9 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
 
     //preferences
     SharedPreferences preferences;
+
+    //sensorModel Object
+    SensorModel sensorModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -238,7 +243,7 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
 
             case (R.id.action_mqtt):
                 Toast.makeText(this, "Send data to Cloud", Toast.LENGTH_SHORT).show();
-                //MQTT
+                MqttConnection mqttConnection = new MqttConnection(sensorModel);
                 return true;
 
             case (R.id.action_settings):
@@ -359,6 +364,8 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
                         connectedToGatt = true;
                         invalidateOptionsMenu();
                         connectionStateString(StaticResources.STATE_CONNECTED);
+                        //new Sensor object which will be passed to the MqttConnection constructor
+                        sensorModel = new SensorModel();
                     } else if (stateConnection.equals(StaticResources.STATE_DISCONNECTED)) {
                         connectedToGatt = false;
                         invalidateOptionsMenu();
@@ -371,18 +378,23 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
                     switch (intent.getStringExtra(StaticResources.EXTRA_CHARACTERISTIC_CHANGED)){
                         case StaticResources.ESP32_TEMP_CHARACTERISTIC:
                             tempValue.setText(intent.getStringExtra(StaticResources.EXTRA_TEMP_VALUE));
+                            sensorModel.setTemp(intent.getByteArrayExtra(StaticResources.EXTRA_TEMP_BYTE_VALUE));
                             break;
                         case StaticResources.ESP32_HEARTH_CHARACTERISTIC:
                             heartValue.setText(intent.getStringExtra(StaticResources.EXTRA_HEART_VALUE));
+                            sensorModel.setHeart(intent.getByteArrayExtra(StaticResources.EXTRA_HEART_BYTE_VALUE));
                             break;
                         case  StaticResources.ESP32_HUMIDITY_CHARACTERISTIC:
                             brightnessValue.setText(intent.getStringExtra(StaticResources.EXTRA_HUMIDITY_VALUE));
+                            sensorModel.setHumidity(intent.getByteArrayExtra(StaticResources.EXTRA_HUMIDITY_BYTE_VALUE));
                             break;
                         case StaticResources.ESP32_PRESSURE_CHARACTERISTIC:
                             pressureValue.setText(intent.getStringExtra(StaticResources.EXTRA_PRESSURE_VALUE));
+                            sensorModel.setPressure(intent.getByteArrayExtra(StaticResources.EXTRA_PRESSURE_BYTE_VALUE));
                             break;
                         case StaticResources.ESP32_ALTITUDE_CHARACTERISTIC:
                             altitudeValue.setText(intent.getStringExtra(StaticResources.EXTRA_ALTITUDE_VALUE));
+                            sensorModel.setAltitude(intent.getByteArrayExtra(StaticResources.EXTRA_ALTITUDE_BYTE_VALUE));
                             break;
                     }
             }

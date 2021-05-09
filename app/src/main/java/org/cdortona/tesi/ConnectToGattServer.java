@@ -232,13 +232,15 @@ class ConnectToGattServer {
                 String tempMessage = new String(tempData);
                 intent.putExtra(StaticResources.EXTRA_CHARACTERISTIC_CHANGED, characteristic.getUuid().toString());
                 intent.putExtra(StaticResources.EXTRA_TEMP_VALUE, tempMessage + " °C");
+                intent.putExtra(StaticResources.EXTRA_TEMP_BYTE_VALUE, tempData);
                 mContext.sendBroadcast(intent);
                 break;
             case StaticResources.ESP32_HEARTH_CHARACTERISTIC:
-                byte[] heartRate = characteristic.getValue();
-                String heartMessage = new String(heartRate);
+                byte[] heartData = characteristic.getValue();
+                String heartMessage = new String(heartData);
                 intent.putExtra(StaticResources.EXTRA_CHARACTERISTIC_CHANGED, characteristic.getUuid().toString());
                 intent.putExtra(StaticResources.EXTRA_HEART_VALUE, heartMessage + " bpm");
+                intent.putExtra(StaticResources.EXTRA_HEART_BYTE_VALUE, heartData);
                 mContext.sendBroadcast(intent);
                 break;
             case StaticResources.ESP32_HUMIDITY_CHARACTERISTIC:
@@ -246,6 +248,8 @@ class ConnectToGattServer {
                 String humidityMessage = new String(humidityData);
                 intent.putExtra(StaticResources.EXTRA_CHARACTERISTIC_CHANGED, characteristic.getUuid().toString());
                 intent.putExtra(StaticResources.EXTRA_HUMIDITY_VALUE, humidityMessage + " %");
+                intent.putExtra(StaticResources.EXTRA_TEMP_BYTE_VALUE, humidityData);
+                intent.putExtra(StaticResources.EXTRA_HUMIDITY_BYTE_VALUE, humidityData);
                 mContext.sendBroadcast(intent);
                 break;
             case StaticResources.ESP32_PRESSURE_CHARACTERISTIC:
@@ -253,6 +257,7 @@ class ConnectToGattServer {
                 String pressureMessage = new String(pressureData);
                 intent.putExtra(StaticResources.EXTRA_CHARACTERISTIC_CHANGED, characteristic.getUuid().toString());
                 intent.putExtra(StaticResources.EXTRA_PRESSURE_VALUE, pressureMessage + " Pa");
+                intent.putExtra(StaticResources.EXTRA_PRESSURE_BYTE_VALUE, pressureData);
                 mContext.sendBroadcast(intent);
                 break;
             case StaticResources.ESP32_ALTITUDE_CHARACTERISTIC:
@@ -260,6 +265,7 @@ class ConnectToGattServer {
                 String altitudeMessage = new String(altitudeData);
                 intent.putExtra(StaticResources.EXTRA_CHARACTERISTIC_CHANGED, characteristic.getUuid().toString());
                 intent.putExtra(StaticResources.EXTRA_ALTITUDE_VALUE, altitudeMessage + " m");
+                intent.putExtra(StaticResources.EXTRA_ALTITUDE_BYTE_VALUE, altitudeData);
                 mContext.sendBroadcast(intent);
         }
     }

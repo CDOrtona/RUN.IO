@@ -36,6 +36,11 @@ final class StaticResources {
     static final String EXTRA_HUMIDITY_VALUE = PACKAGE_NAME + "humidityValue";
     static final String EXTRA_PRESSURE_VALUE = PACKAGE_NAME + "pressureValue";
     static final String EXTRA_ALTITUDE_VALUE = PACKAGE_NAME + "altitudeValue";
+    static final String EXTRA_TEMP_BYTE_VALUE = PACKAGE_NAME + "tempValueByte";
+    static final String EXTRA_HEART_BYTE_VALUE = PACKAGE_NAME + "heartValueByte";
+    static final String EXTRA_HUMIDITY_BYTE_VALUE = PACKAGE_NAME + "humidityValueByte";
+    static final String EXTRA_PRESSURE_BYTE_VALUE = PACKAGE_NAME + "pressureValueByte";
+    static final String EXTRA_ALTITUDE_BYTE_VALUE = PACKAGE_NAME + "altitudeValueByte";
     static final String EXTRA_CHARACTERISTIC_CHANGED = PACKAGE_NAME + "characteristicToBeNotified";
 
     //values for the putExtra method

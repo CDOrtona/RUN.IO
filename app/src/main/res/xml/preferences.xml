@@ -35,7 +35,8 @@
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="emergency_checkbox"
-            android:title="Enable Emergency Service" />
+            android:title="Enable Emergency Service"
+            android:contentDescription="asdasdasd"/>
         <EditTextPreference
             android:defaultValue=""
             android:key="relative_phone"
