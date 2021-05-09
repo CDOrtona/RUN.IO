@@ -44,4 +44,32 @@ public class SensorModel {
     public void setSos(byte[] sos) {
         this.sos = sos;
     }
+
+    public byte[] getTemp() {
+        return temp;
+    }
+
+    public byte[] getHumidity() {
+        return humidity;
+    }
+
+    public byte[] getPressure() {
+        return pressure;
+    }
+
+    public byte[] getAltitude() {
+        return altitude;
+    }
+
+    public byte[] getGps() {
+        return gps;
+    }
+
+    public byte[] getHeart() {
+        return heart;
+    }
+
+    public byte[] getSos() {
+        return sos;
+    }
 }

@@ -12,7 +12,7 @@ final class StaticResources {
     private static final String PACKAGE_NAME = "com.cdortona.tesi";
 
     //ESP32 info
-    //static final String ESP32_ADDRESS = "30:AE:A4:F5:88:6E";
+    static final String ESP32_ADDRESS = "30:AE:A4:F5:88:6E";
     static final String ESP32_BME280_SERVICE = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
     static final String ESP32_HEART_SERVICE = "9c100603-509a-42ae-a22a-f5ba9e9c9d94";
     static final String ESP32_TEMP_CHARACTERISTIC = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
@@ -43,10 +43,24 @@ final class StaticResources {
     static final String EXTRA_ALTITUDE_BYTE_VALUE = PACKAGE_NAME + "altitudeValueByte";
     static final String EXTRA_CHARACTERISTIC_CHANGED = PACKAGE_NAME + "characteristicToBeNotified";
 
-    //values for the putExtra method
+    //values for the putExtra method for BLE connectivity
     static final String STATE_CONNECTED = "Connected";
     static final String STATE_DISCONNECTED = "Disconnected";
     static final String STATE_CONNECTING = "Connecting...";
+
+    //MQTT Connection
+    static final String LWT_MESSAGE = "Last Will and Testament from " + ESP32_ADDRESS;
+    static final String LWT_TOPIC = ESP32_ADDRESS + "/lastWill";
+    static final String TEMP_TOPIC = ESP32_ADDRESS + "/temp";
+    static final String HUMIDITY_TOPIC = ESP32_ADDRESS + "/humidity";
+    static final String PRESSURE_TOPIC = ESP32_ADDRESS + "/pressure";
+    static final String ALTITUDE_TOPIC = ESP32_ADDRESS + "/altitude";
+    static final String HEART_TOPIC = ESP32_ADDRESS + "/heart";
+    static final String SOS_TOPIC = ESP32_ADDRESS + "/sos";
+    static final String GPS_TOPIC = ESP32_ADDRESS + "/gps";
+    static final int QOS_0 = 0;
+    static final int QOS_1 = 1;
+    static final int QOS_2 = 2;
 
     //General static Resources
     static final String WEB_PAGE = PACKAGE_NAME + ".webUrl";

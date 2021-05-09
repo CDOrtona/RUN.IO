@@ -44,8 +44,6 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -107,6 +105,9 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
 
     //sensorModel Object
     SensorModel sensorModel;
+
+    //MQTT
+    MqttConnection mqttConnection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -179,6 +180,9 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
         /*user = new UserModel(preferences.getString("user_name", "Cristian"),
                 preferences.getString("user_gender", "Male"), preferences.getInt("user_age", 23),
                 preferences.getInt("user_weight", 85));*/
+
+        //Mqttconnection object initialization
+        mqttConnection = new MqttConnection(sensorModel, this.getApplicationContext());
     }
 
     @Override
@@ -228,6 +232,7 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
             case (R.id.action_disconnect):
                 invalidateOptionsMenu();
                 disconnectFromGatt();
+                mqttConnection.mqttDisconnect();
                 return true;
 
             case (R.id.action_graph_rssi):
@@ -243,7 +248,7 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
 
             case (R.id.action_mqtt):
                 Toast.makeText(this, "Send data to Cloud", Toast.LENGTH_SHORT).show();
-                MqttConnection mqttConnection = new MqttConnection(sensorModel);
+                mqttConnection.sendMessage();
                 return true;
 
             case (R.id.action_settings):
