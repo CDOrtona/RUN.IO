@@ -1,5 +1,7 @@
 package org.cdortona.tesi;
 
+import java.nio.charset.StandardCharsets;
+
 /**
  * Cristian D'Ortona
  *
@@ -14,23 +16,14 @@ public class SensorModel {
     byte[] pressure;
     byte[] altitude;
     byte[] gps;
-    byte[]heart;
+    byte[] heart;
     byte[] sos;
 
-    public void setTemp(byte[] temp) {
-        this.temp = temp;
-    }
-
-    public void setHumidity(byte[] humidity) {
-        this.humidity = humidity;
-    }
-
-    public void setPressure(byte[] pressure) {
-        this.pressure = pressure;
-    }
-
-    public void setAltitude(byte[] altitude) {
-        this.altitude = altitude;
+    SensorModel(String temp, String humidity, String pressure, String altitude){
+        this.temp = temp.getBytes(StandardCharsets.UTF_8);
+        this.humidity = temp.getBytes(StandardCharsets.UTF_8);
+        this.pressure = temp.getBytes(StandardCharsets.UTF_8);
+        this.altitude = temp.getBytes(StandardCharsets.UTF_8);
     }
 
     public void setGps(byte[] gps) {
@@ -46,30 +39,30 @@ public class SensorModel {
     }
 
     public byte[] getTemp() {
-        return temp;
+        return this.temp;
     }
 
     public byte[] getHumidity() {
-        return humidity;
+        return this.humidity;
     }
 
     public byte[] getPressure() {
-        return pressure;
+        return this.pressure;
     }
 
     public byte[] getAltitude() {
-        return altitude;
+        return this.altitude;
     }
 
     public byte[] getGps() {
-        return gps;
+        return this.gps;
     }
 
     public byte[] getHeart() {
-        return heart;
+        return this.heart;
     }
 
     public byte[] getSos() {
-        return sos;
+        return this.sos;
     }
 }

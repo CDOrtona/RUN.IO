@@ -8,6 +8,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
@@ -44,7 +45,17 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import org.eclipse.paho.android.service.MqttAndroidClient;
+import org.eclipse.paho.client.mqttv3.IMqttActionListener;
+import org.eclipse.paho.client.mqttv3.IMqttToken;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -76,7 +87,7 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
     TextView connectionState;
     TextView tempValue;
     TextView heartValue;
-    TextView brightnessValue;
+    TextView humidityValue;
     TextView gpsValue;
     TextView pressureValue;
     TextView pedometerValue;
@@ -103,11 +114,16 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
     //preferences
     SharedPreferences preferences;
 
-    //sensorModel Object
-    SensorModel sensorModel;
+    String temp;
+    String heartBeat;
+    String humidity;
+    String locations;
+    String pressure;
+    String altitude;
+    Boolean sos;
 
     //MQTT
-    MqttConnection mqttConnection;
+    Intent mqttService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,7 +137,7 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
         connectionState = findViewById(R.id.connection_state_textView);
         tempValue = findViewById(R.id.textView_temp);
         heartValue = findViewById(R.id.textView_heart);
-        brightnessValue = findViewById(R.id.textView_brightness);
+        humidityValue = findViewById(R.id.textView_brightness);
         gpsValue = findViewById(R.id.textView_position);
         pressureValue = findViewById(R.id.pressure_text_view);
         pedometerValue = findViewById(R.id.pedometer_text_view);
@@ -181,8 +197,6 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
                 preferences.getString("user_gender", "Male"), preferences.getInt("user_age", 23),
                 preferences.getInt("user_weight", 85));*/
 
-        //Mqttconnection object initialization
-        mqttConnection = new MqttConnection(sensorModel, this.getApplicationContext());
     }
 
     @Override
@@ -232,7 +246,6 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
             case (R.id.action_disconnect):
                 invalidateOptionsMenu();
                 disconnectFromGatt();
-                mqttConnection.mqttDisconnect();
                 return true;
 
             case (R.id.action_graph_rssi):
@@ -247,8 +260,13 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
                 return true;
 
             case (R.id.action_mqtt):
-                Toast.makeText(this, "Send data to Cloud", Toast.LENGTH_SHORT).show();
-                mqttConnection.sendMessage();
+                Toast.makeText(this, "Sending data to remote clients", Toast.LENGTH_SHORT).show();
+                mqttService = new Intent(this, MqttService.class);
+                try {
+                    startService(mqttService);
+                } catch (IllegalStateException | SecurityException e){
+                    e.printStackTrace();
+                }
                 return true;
 
             case (R.id.action_settings):
@@ -318,6 +336,7 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
         disconnectFromGatt();
     }
 
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -370,7 +389,6 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
                         invalidateOptionsMenu();
                         connectionStateString(StaticResources.STATE_CONNECTED);
                         //new Sensor object which will be passed to the MqttConnection constructor
-                        sensorModel = new SensorModel();
                     } else if (stateConnection.equals(StaticResources.STATE_DISCONNECTED)) {
                         connectedToGatt = false;
                         invalidateOptionsMenu();
@@ -382,24 +400,29 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
                     Log.d("whichCharChanged", StaticResources.EXTRA_CHARACTERISTIC_CHANGED);
                     switch (intent.getStringExtra(StaticResources.EXTRA_CHARACTERISTIC_CHANGED)){
                         case StaticResources.ESP32_TEMP_CHARACTERISTIC:
-                            tempValue.setText(intent.getStringExtra(StaticResources.EXTRA_TEMP_VALUE));
-                            sensorModel.setTemp(intent.getByteArrayExtra(StaticResources.EXTRA_TEMP_BYTE_VALUE));
+                            temp = intent.getStringExtra(StaticResources.EXTRA_TEMP_VALUE);
+                            tempValue.setText(temp);
+                            //sensorModel.setTemp(intent.getByteArrayExtra(StaticResources.EXTRA_TEMP_BYTE_VALUE));
                             break;
                         case StaticResources.ESP32_HEARTH_CHARACTERISTIC:
-                            heartValue.setText(intent.getStringExtra(StaticResources.EXTRA_HEART_VALUE));
-                            sensorModel.setHeart(intent.getByteArrayExtra(StaticResources.EXTRA_HEART_BYTE_VALUE));
+                            heartBeat = intent.getStringExtra(StaticResources.EXTRA_HEART_VALUE);
+                            heartValue.setText(heartBeat);
+                            //sensorModel.setHeart(intent.getByteArrayExtra(StaticResources.EXTRA_HEART_BYTE_VALUE));
                             break;
                         case  StaticResources.ESP32_HUMIDITY_CHARACTERISTIC:
-                            brightnessValue.setText(intent.getStringExtra(StaticResources.EXTRA_HUMIDITY_VALUE));
-                            sensorModel.setHumidity(intent.getByteArrayExtra(StaticResources.EXTRA_HUMIDITY_BYTE_VALUE));
+                            humidity = intent.getStringExtra(StaticResources.EXTRA_HUMIDITY_VALUE);
+                            humidityValue.setText(humidity);
+                            //sensorModel.setHumidity(intent.getByteArrayExtra(StaticResources.EXTRA_HUMIDITY_BYTE_VALUE));
                             break;
                         case StaticResources.ESP32_PRESSURE_CHARACTERISTIC:
-                            pressureValue.setText(intent.getStringExtra(StaticResources.EXTRA_PRESSURE_VALUE));
-                            sensorModel.setPressure(intent.getByteArrayExtra(StaticResources.EXTRA_PRESSURE_BYTE_VALUE));
+                            pressure = intent.getStringExtra(StaticResources.EXTRA_PRESSURE_VALUE);
+                            pressureValue.setText(pressure);
+                            //sensorModel.setPressure(intent.getByteArrayExtra(StaticResources.EXTRA_PRESSURE_BYTE_VALUE));
                             break;
                         case StaticResources.ESP32_ALTITUDE_CHARACTERISTIC:
-                            altitudeValue.setText(intent.getStringExtra(StaticResources.EXTRA_ALTITUDE_VALUE));
-                            sensorModel.setAltitude(intent.getByteArrayExtra(StaticResources.EXTRA_ALTITUDE_BYTE_VALUE));
+                            altitude = intent.getStringExtra(StaticResources.EXTRA_ALTITUDE_VALUE);
+                            altitudeValue.setText(altitude);
+                            //sensorModel.setAltitude(intent.getByteArrayExtra(StaticResources.EXTRA_ALTITUDE_BYTE_VALUE));
                             break;
                     }
             }
@@ -502,6 +525,8 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
         connectToGattServer.disconnectGattServer();
         connectedToGatt = false;
         connectionStateString(StaticResources.STATE_DISCONNECTED);
+        //destroy the MQTT service
+        //stopService(mqttService);
         //this is gonna flush the location stored in the location variable
         locationProviderClient.flushLocations();
         locationProviderClient.removeLocationUpdates(locationCallBack);
