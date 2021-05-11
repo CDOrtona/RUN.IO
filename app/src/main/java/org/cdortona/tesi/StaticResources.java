@@ -58,6 +58,8 @@ final class StaticResources {
     static final String HEART_TOPIC = ESP32_ADDRESS + "/heart";
     static final String SOS_TOPIC = ESP32_ADDRESS + "/sos";
     static final String GPS_TOPIC = ESP32_ADDRESS + "/gps";
+    static final String EXTRA_SOS_FLAG = PACKAGE_NAME + "sos_flag";
+    static final String EXTRA_LOCATION = PACKAGE_NAME + "location_mqtt";
     static final int QOS_0 = 0;
     static final int QOS_1 = 1;
     static final int QOS_2 = 2;

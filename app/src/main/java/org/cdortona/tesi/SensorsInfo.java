@@ -10,6 +10,7 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.Service;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -117,7 +118,7 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
     String temp;
     String heartBeat;
     String humidity;
-    String locations;
+    String position;
     String pressure;
     String altitude;
     Boolean sos;
@@ -229,6 +230,9 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
 
             case (R.id.action_emergency):
                 if(emergencyBoolean){
+                    mqttService = new Intent(this, MqttService.class);
+                    mqttService.putExtra(StaticResources.EXTRA_SOS_FLAG, true);
+                    startService(mqttService);
                     //I have to make sure the user agrees with the permissions at run-time
                     if(phoneCallPermissions()) {
                         Intent callIntent = new Intent(Intent.ACTION_CALL);
@@ -262,6 +266,7 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
             case (R.id.action_mqtt):
                 Toast.makeText(this, "Sending data to remote clients", Toast.LENGTH_SHORT).show();
                 mqttService = new Intent(this, MqttService.class);
+                mqttService.putExtra(StaticResources.EXTRA_LOCATION, position);
                 try {
                     startService(mqttService);
                 } catch (IllegalStateException | SecurityException e){
@@ -402,27 +407,22 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
                         case StaticResources.ESP32_TEMP_CHARACTERISTIC:
                             temp = intent.getStringExtra(StaticResources.EXTRA_TEMP_VALUE);
                             tempValue.setText(temp);
-                            //sensorModel.setTemp(intent.getByteArrayExtra(StaticResources.EXTRA_TEMP_BYTE_VALUE));
                             break;
                         case StaticResources.ESP32_HEARTH_CHARACTERISTIC:
                             heartBeat = intent.getStringExtra(StaticResources.EXTRA_HEART_VALUE);
                             heartValue.setText(heartBeat);
-                            //sensorModel.setHeart(intent.getByteArrayExtra(StaticResources.EXTRA_HEART_BYTE_VALUE));
                             break;
                         case  StaticResources.ESP32_HUMIDITY_CHARACTERISTIC:
                             humidity = intent.getStringExtra(StaticResources.EXTRA_HUMIDITY_VALUE);
                             humidityValue.setText(humidity);
-                            //sensorModel.setHumidity(intent.getByteArrayExtra(StaticResources.EXTRA_HUMIDITY_BYTE_VALUE));
                             break;
                         case StaticResources.ESP32_PRESSURE_CHARACTERISTIC:
                             pressure = intent.getStringExtra(StaticResources.EXTRA_PRESSURE_VALUE);
                             pressureValue.setText(pressure);
-                            //sensorModel.setPressure(intent.getByteArrayExtra(StaticResources.EXTRA_PRESSURE_BYTE_VALUE));
                             break;
                         case StaticResources.ESP32_ALTITUDE_CHARACTERISTIC:
                             altitude = intent.getStringExtra(StaticResources.EXTRA_ALTITUDE_VALUE);
                             altitudeValue.setText(altitude);
-                            //sensorModel.setAltitude(intent.getByteArrayExtra(StaticResources.EXTRA_ALTITUDE_BYTE_VALUE));
                             break;
                     }
             }
@@ -490,8 +490,8 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
                 @Override
                 public void onSuccess(Location location) {
                     //location is null if there is no known location found
-                    String position = "Lo: " + Math.round(location.getLongitude() * 100d) / 100d + '\n' +
-                             "La: " + Math.round(location.getLatitude() * 100d) / 100d;
+                    position = Math.round(location.getLongitude() * 100d) / 100d + "," +
+                             + Math.round(location.getLatitude() * 100d) / 100d;
                     gpsValue.setText(position);
                 }
             });

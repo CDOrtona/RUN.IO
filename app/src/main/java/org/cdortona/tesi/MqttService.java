@@ -15,11 +15,13 @@ import org.eclipse.paho.client.mqttv3.DisconnectedBufferOptions;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
+import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.internal.Token;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 import java.nio.charset.StandardCharsets;
@@ -27,8 +29,11 @@ import java.nio.charset.StandardCharsets;
 public class MqttService extends Service {
 
     String TAG = "MqttService";
-    MqttClient client;
+    MqttAsyncClient client;
     private final String serverUri = "tcp://192.168.1.45:1883";
+    private final String user = "cPanel";
+    private final String pwd = "test";
+    private MemoryPersistence persistance;
 
     String temp;
     String heartBeat;
@@ -63,10 +68,17 @@ public class MqttService extends Service {
         try {
             MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
             mqttConnectOptions.setMqttVersion(MqttConnectOptions.MQTT_VERSION_3_1_1);
-            mqttConnectOptions.setCleanSession(false);
-            //mqttConnectOptions.setUserName("test");
-            //mqttConnectOptions.setPassword("test".toCharArray());
-            client = new MqttClient(serverUri,clientId, null);
+            mqttConnectOptions.setCleanSession(true);
+            mqttConnectOptions.setAutomaticReconnect(true);
+            mqttConnectOptions.setUserName(user);
+            mqttConnectOptions.setPassword(pwd.toCharArray());
+            client = new MqttAsyncClient(serverUri, clientId, persistance);
+            client.connect(mqttConnectOptions);
+            try {
+                Thread.sleep(5000);
+            } catch (Exception e){
+                e.printStackTrace();
+            }
             client.setCallback(new MqttCallback() {
                 @Override
                 public void connectionLost(Throwable cause) {
@@ -95,8 +107,23 @@ public class MqttService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        if(temp != null)
-            pub(StaticResources.TEMP_TOPIC, temp);
+        boolean sos_on = intent.getBooleanExtra(StaticResources.EXTRA_SOS_FLAG, false);
+        String position = intent.getStringExtra(StaticResources.EXTRA_LOCATION);
+        //this is checking if the user has fired the sos
+        if(sos_on){
+            pub(StaticResources.SOS_TOPIC, "ON", StaticResources.QOS_2);
+        } else {
+            if(temp != null)
+                pub(StaticResources.TEMP_TOPIC, temp, StaticResources.QOS_0);
+            if(humidity != null)
+                pub(StaticResources.HUMIDITY_TOPIC, humidity, StaticResources.QOS_0);
+            if(pressure != null)
+                pub(StaticResources.PRESSURE_TOPIC, pressure, StaticResources.QOS_0);
+            if(altitude != null)
+                pub(StaticResources.ALTITUDE_TOPIC, altitude, StaticResources.QOS_0);
+            if(position != null)
+                pub(StaticResources.GPS_TOPIC, position, StaticResources.QOS_0);
+        }
 
         return super.onStartCommand(intent, flags, startId);
     }
@@ -132,11 +159,12 @@ public class MqttService extends Service {
     };
 
     //this handles the publishing of the messages
-    void pub(String topic, String payload){
+    void pub(String topic, String payload, int QoS){
         byte[] encodedPayload;
         try {
             encodedPayload = payload.getBytes(StandardCharsets.UTF_8);
             MqttMessage message = new MqttMessage(encodedPayload);
+            message.setQos(QoS);
             client.publish(topic, message);
         } catch (MqttException e) {
             e.printStackTrace();
