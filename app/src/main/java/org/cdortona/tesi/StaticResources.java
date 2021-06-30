@@ -56,7 +56,7 @@ final class StaticResources {
     static final String PRESSURE_TOPIC = ESP32_ADDRESS + "/pressure";
     static final String ALTITUDE_TOPIC = ESP32_ADDRESS + "/altitude";
     static final String HEART_TOPIC = ESP32_ADDRESS + "/heart";
-    static final String SOS_TOPIC = ESP32_ADDRESS + "/sos";
+    static final String SOS_TOPIC =  "emergency/sos";
     static final String GPS_TOPIC = ESP32_ADDRESS + "/gps";
     static final String EXTRA_SOS_FLAG = PACKAGE_NAME + "sos_flag";
     static final String EXTRA_LOCATION = PACKAGE_NAME + "location_mqtt";
