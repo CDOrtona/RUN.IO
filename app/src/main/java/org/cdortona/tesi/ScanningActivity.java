@@ -44,7 +44,7 @@ import java.util.UUID;
  *
  */
 
-public class MainActivity extends AppCompatActivity {
+public class ScanningActivity extends AppCompatActivity {
 
     private final int REQUEST_ENABLE_BT = 1;
     private final int REQUEST_FINE_LOCATION = 2;
@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                final Intent intent = new Intent(MainActivity.this, SensorsInfo.class);
+                final Intent intent = new Intent(ScanningActivity.this, SensorsInfo.class);
                 intent.putExtra(StaticResources.EXTRA_CHOOSEN_ADDRESS, devicesScannedList.get(position).getBleAddress());
                 intent.putExtra(StaticResources.EXTRA_CHOOSEN_NAME, devicesScannedList.get(position).getDeviceName());
                 setResult(StaticResources.REQUEST_CODE_SCAN_ACTIVITY, intent);
@@ -147,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
                 stopScan();
                 return true;
             case (R.id.action_adapter_info):
-                Intent adapterInfo = new Intent(MainActivity.this, AdapterInfo.class);
+                Intent adapterInfo = new Intent(ScanningActivity.this, AdapterInfo.class);
                 startActivity(adapterInfo);
                 return true;
             default:

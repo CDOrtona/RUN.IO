@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
+import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -23,6 +24,8 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.internal.Token;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
 
@@ -111,7 +114,11 @@ public class MqttService extends Service {
         String position = intent.getStringExtra(StaticResources.EXTRA_LOCATION);
         //this is checking if the user has fired the sos
         if(sos_on){
-            pub(StaticResources.SOS_TOPIC, "ON", StaticResources.QOS_2);
+            try {
+                pub(StaticResources.SOS_TOPIC, jsonSoS(position).toString(), StaticResources.QOS_2);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         } else {
             if(temp != null)
                 pub(StaticResources.TEMP_TOPIC, temp, StaticResources.QOS_0);
@@ -170,4 +177,13 @@ public class MqttService extends Service {
             e.printStackTrace();
         }
     }
+
+    //this creates a JSON object containing SoS info to be published
+    private JSONObject jsonSoS(String position) throws JSONException {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("position", position);
+        jsonObject.put("sender", StaticResources.ESP32_ADDRESS);
+        return jsonObject;
+    }
+
 }

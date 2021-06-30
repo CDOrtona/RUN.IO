@@ -8,9 +8,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.Service;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -46,17 +44,7 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
-import org.eclipse.paho.android.service.MqttAndroidClient;
-import org.eclipse.paho.client.mqttv3.IMqttActionListener;
-import org.eclipse.paho.client.mqttv3.IMqttToken;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
-
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -219,7 +207,7 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case(R.id.action_connect_to_peripheral):
-                Intent scanDevices = new Intent(SensorsInfo.this, MainActivity.class);
+                Intent scanDevices = new Intent(SensorsInfo.this, ScanningActivity.class);
                 try{
                     startActivityForResult(scanDevices, StaticResources.REQUEST_CODE_SCAN_ACTIVITY);
                 } catch (ActivityNotFoundException e){
@@ -232,8 +220,9 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
                 if(emergencyBoolean){
                     mqttService = new Intent(this, MqttService.class);
                     mqttService.putExtra(StaticResources.EXTRA_SOS_FLAG, true);
+                    mqttService.putExtra(StaticResources.EXTRA_LOCATION, position);
                     startService(mqttService);
-                    //I have to make sure the user agrees with the permissions at run-time
+                    //I have to make sure the user agrees with the phone permissions at run-time
                     if(phoneCallPermissions()) {
                         Intent callIntent = new Intent(Intent.ACTION_CALL);
                         callIntent.setData(Uri.parse("tel:" + preferences.getString("relative_phone", "331")));
