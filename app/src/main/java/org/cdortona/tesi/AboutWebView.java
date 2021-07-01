@@ -10,7 +10,7 @@ import android.view.MenuInflater;
 import android.webkit.WebView;
 
 /**
- * Cristian D'Ortona
+ *@author Cristian D'Ortona
  *
  * TESI DI LAUREA IN INGEGNERIA ELETTRONICA E DELLE TELECOMUNICAZIONI
  *

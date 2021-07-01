@@ -17,7 +17,7 @@ import android.widget.TextView;
 import java.util.Objects;
 
 /**
- * Cristian D'Ortona
+ *@author Cristian D'Ortona
  *
  * TESI DI LAUREA IN INGEGNERIA ELETTRONICA E DELLE TELECOMUNICAZIONI
  *

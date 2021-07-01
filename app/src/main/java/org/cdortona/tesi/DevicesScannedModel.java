@@ -1,7 +1,7 @@
 package org.cdortona.tesi;
 
 /**
- * Cristian D'Ortona
+ *@author Cristian D'Ortona
  *
  * TESI DI LAUREA IN INGEGNERIA ELETTRONICA E DELLE TELECOMUNICAZIONI
  *
@@ -18,7 +18,7 @@ public class DevicesScannedModel {
     //constructor
     DevicesScannedModel(String deviceName, String address, int rssi, int bondState) {
         if(deviceName == null){
-            this.deviceName = "Smart_Shirt #001";
+            this.deviceName = "Unknown Device";
         }
         else{
             this.deviceName = deviceName;

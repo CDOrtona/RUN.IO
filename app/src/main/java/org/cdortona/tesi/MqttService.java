@@ -29,11 +29,19 @@ import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
 
+/**
+ *@author Cristian D'Ortona
+ *
+ * TESI DI LAUREA IN INGEGNERIA ELETTRONICA E DELLE TELECOMUNICAZIONI
+ *
+ */
+
 public class MqttService extends Service {
 
     String TAG = "MqttService";
     MqttAsyncClient client;
-    private final String serverUri = "tcp://192.168.1.45:1883";
+    //test variables
+    private final String serverUri = "tcp://192.168.1.61:1883";
     private final String user = "cPanel";
     private final String pwd = "test";
     private MemoryPersistence persistance;

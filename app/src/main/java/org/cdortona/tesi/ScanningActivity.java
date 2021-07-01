@@ -38,7 +38,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Cristian D'Ortona
+ *@author Cristian D'Ortona
  *
  * TESI DI LAUREA IN INGEGNERIA ELETTRONICA E DELLE TELECOMUNICAZIONI
  *

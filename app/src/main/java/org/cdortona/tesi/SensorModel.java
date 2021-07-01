@@ -3,7 +3,7 @@ package org.cdortona.tesi;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Cristian D'Ortona
+ *@author Cristian D'Ortona
  *
  * TESI DI LAUREA IN INGEGNERIA ELETTRONICA E DELLE TELECOMUNICAZIONI
  *
