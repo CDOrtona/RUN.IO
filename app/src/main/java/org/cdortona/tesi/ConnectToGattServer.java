@@ -29,6 +29,7 @@ import java.util.UUID;
 class ConnectToGattServer {
 
     private Context mContext;
+    private String TAG = "ConnectToGattServer";
 
     private BluetoothAdapter bluetoothAdapter;
 
@@ -67,7 +68,7 @@ class ConnectToGattServer {
             gatt = bleAdvertiser.connectGatt(mContext, true, gattCallBack);
         } catch (IllegalArgumentException e) {
             e.getStackTrace();
-            Log.e("connectToGatt", "the address is not associated to any BLE advertiser nearby");
+            Log.e(TAG, "the address is not associated to any BLE advertiser nearby");
             Toast.makeText(mContext, "Error, the address doesn't match any BLE advertiser nearby", Toast.LENGTH_LONG).show();
         }
     }
@@ -89,7 +90,7 @@ class ConnectToGattServer {
             super.onConnectionStateChange(gatt, status, newState);
 
             if (status != BluetoothGatt.GATT_SUCCESS) {
-                Log.e("onConnectionStateChange", "There is a problem connecting to the remote peripheral");
+                Log.e(TAG, "There is a problem connecting to the remote peripheral");
                 Toast.makeText(mContext, "Error occurred, please try again", Toast.LENGTH_SHORT).show();
                 updateBroadcast(StaticResources.STATE_DISCONNECTED, StaticResources.ACTION_CONNECTION_STATE);
                 return;
@@ -97,15 +98,15 @@ class ConnectToGattServer {
 
             //I'm creating an intent which contains the intent-filter used to identify the connection state of the GATT server
             if (newState == BluetoothProfile.STATE_CONNECTED) {
-                Log.d("onConnectionStateChange", "connected to Bluetooth successfully");
+                Log.d(TAG, "connected to Bluetooth successfully");
                 discoverServicesDelay(gatt);
                 updateBroadcast(StaticResources.STATE_CONNECTED, StaticResources.ACTION_CONNECTION_STATE);
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                Log.d("onConnectionStateChange", "disconnecting GATT server");
+                Log.d(TAG, "disconnecting GATT server");
                 disconnectGattServer();
                 updateBroadcast(StaticResources.STATE_DISCONNECTED, StaticResources.ACTION_CONNECTION_STATE);
             } else if (newState == BluetoothProfile.STATE_CONNECTING) {
-                Log.d("onConnectionStateChange", "Connecting...");
+                Log.d(TAG, "Connecting...");
             }
         }
 
@@ -114,7 +115,7 @@ class ConnectToGattServer {
             super.onServicesDiscovered(gatt, status);
 
             if (status != BluetoothGatt.GATT_SUCCESS) {
-                Log.e("onServiceDiscovered", "There was a problem with discovering the peripheral's services");
+                Log.e(TAG, "There was a problem with discovering the peripheral's services");
                 Toast.makeText(mContext, "The remote device appears to be malfunctioning", Toast.LENGTH_SHORT).show();
                 //Forcing to disconnect in case there is a problem with finding the services
                 updateBroadcast(StaticResources.STATE_DISCONNECTED, StaticResources.ACTION_CONNECTION_STATE);
@@ -130,47 +131,47 @@ class ConnectToGattServer {
 
             //debug
             for (int i = 1; i < gattServicesList.size(); i++) {
-                Log.i("onServicesDiscovered", "I'm printing the list of the services:" + gattServicesList.get(i).getUuid().toString() + '\n');
+                Log.i(TAG, "I'm printing the list of the services:" + gattServicesList.get(i).getUuid().toString() + '\n');
             }
 
             for (int i = 0; i < gattCharacteristicsList.size(); i++) {
                 switch (gattCharacteristicsList.get(i).getUuid().toString()) {
                     case StaticResources.ESP32_TEMP_CHARACTERISTIC:
                         gattCharacteristicTemp = gattCharacteristicsList.get(i);
-                        Log.d("assignCharacteristics", "charactersitic has been assigned correctly, " +
+                        Log.d(TAG, "charactersitic has been assigned correctly, " +
                                 +'\n' + "UUID: " + gattCharacteristicsList.get(i).getUuid());
 
                         break;
 
                     case StaticResources.ESP32_HEARTH_CHARACTERISTIC:
                         gattCharacteristicHearth = gattCharacteristicsList.get(i);
-                        Log.d("assignCharacteristics", "characteristic has been assigned correctly, " +
+                        Log.d(TAG, "characteristic has been assigned correctly, " +
                                 +'\n' + "UUID: " + gattCharacteristicsList.get(i).getUuid());
 
                         break;
 
                     case StaticResources.ESP32_HUMIDITY_CHARACTERISTIC:
                         gattCharacteristicHumidity = gattCharacteristicsList.get(i);
-                        Log.d("assignCharacteristics", "characteristic has been assigned correctly, " +
+                        Log.d(TAG, "characteristic has been assigned correctly, " +
                                 +'\n' + "UUID: " + gattCharacteristicsList.get(i).getUuid());
 
                         break;
 
                     case StaticResources.ESP32_PRESSURE_CHARACTERISTIC:
                         gattCharacteristicPressure = gattCharacteristicsList.get(i);
-                        Log.d("assignCharacteristics", "characteristic has been assigned correctly, " +
+                        Log.d(TAG, "characteristic has been assigned correctly, " +
                                 +'\n' + "UUID: " + gattCharacteristicsList.get(i).getUuid());
                         break;
 
                     case StaticResources.ESP32_ALTITUDE_CHARACTERISTIC:
                         gattCharacteristicAltitude = gattCharacteristicsList.get(i);
-                        Log.d("assignCharacteristics", "characteristic has been assigned correctly, " +
+                        Log.d(TAG, "characteristic has been assigned correctly, " +
                                 +'\n' + "UUID: " + gattCharacteristicsList.get(i).getUuid());
                         break;
 
                     default:
                         //this happens when there is a characteristic in the service that isn't part of the predefined ones
-                        Log.d("assignCharacteristics", "Characteristic not listed in the predefined ones"
+                        Log.d(TAG, "Characteristic not listed in the predefined ones"
                                 + '\n' + "UUID: " + gattCharacteristicsList.get(i).getUuid());
                         break;
                 }
@@ -195,11 +196,11 @@ class ConnectToGattServer {
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             super.onDescriptorWrite(gatt, descriptor, status);
             if (status != BluetoothGatt.GATT_SUCCESS) {
-                Log.e("onDescriptorWrite", "Writing to the descriptor of the characteristic: " + descriptor.getCharacteristic().getUuid().toString() + " failed");
+                Log.e(TAG, "Writing to the descriptor of the characteristic: " + descriptor.getCharacteristic().getUuid().toString() + " failed");
                 Toast.makeText(mContext, "The notify property seems to not be working", Toast.LENGTH_SHORT).show();
             }
 
-            Log.d("onDescriptorWrite", "Characteristic: " + descriptor.getCharacteristic().getUuid().toString() + " notify() property -> ON");
+            Log.d(TAG, "Characteristic: " + descriptor.getCharacteristic().getUuid().toString() + " notify() property -> ON");
             gatt.setCharacteristicNotification(descriptor.getCharacteristic(), true);
             setCharacteristicNotification();
         }
@@ -210,7 +211,7 @@ class ConnectToGattServer {
     private void discoverServicesDelay(BluetoothGatt gatt) {
         try {
             Thread.sleep(600);
-            Log.d("discoverServicesDelay", "delay before discovering services...");
+            Log.d(TAG, "delay before discovering services...");
             gatt.discoverServices();
         } catch (InterruptedException e) {
             e.printStackTrace();

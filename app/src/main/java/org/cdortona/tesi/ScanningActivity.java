@@ -46,6 +46,8 @@ import java.util.UUID;
 
 public class ScanningActivity extends AppCompatActivity {
 
+    private String TAG = "ScanningActivity";
+
     private final int REQUEST_ENABLE_BT = 1;
     private final int REQUEST_FINE_LOCATION = 2;
 
@@ -152,6 +154,7 @@ public class ScanningActivity extends AppCompatActivity {
                 return true;
             default:
                 //item selected not recognized
+                Log.e(TAG, "error, selected item not recognized");
                 return super.onOptionsItemSelected(item);
         }
     }
@@ -190,14 +193,18 @@ public class ScanningActivity extends AppCompatActivity {
     //this'll prompt a window where the user'll be able to either agree or not on the activation of the BLE
     //the REQUEST_ENABLE_BT will be returned in OoActivityResult() if greater than 0
     private void checkBleStatus(){
-        if(bluetoothAdapter == null || !bluetoothAdapter.isEnabled()){
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            //startActivityForResult throws the following exception
-            try{
-                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-                Log.d("request to turn BLE on", "Request to turn BLE sent");
-            } catch (ActivityNotFoundException e){
-                Log.e("request to turn BLE on", "the activity wasn't found");
+        if(bluetoothAdapter == null){
+            Log.w(TAG, "device has no Bluetooth radio");
+        } else {
+            if(!bluetoothAdapter.isEnabled()){
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                //startActivityForResult throws the following exception
+                try{
+                    startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+                    Log.d("request to turn BLE on", "Request to turn BLE sent");
+                } catch (ActivityNotFoundException e){
+                    Log.e("request to turn BLE on", "the activity wasn't found");
+                }
             }
         }
     }
@@ -220,11 +227,9 @@ public class ScanningActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == REQUEST_ENABLE_BT){
             if(resultCode == RESULT_OK){
-                //hard coded
                 Toast.makeText(this,"Bluetooth Enabled", Toast.LENGTH_LONG).show();
             }
             else if(resultCode == RESULT_CANCELED){
-                //hard coded
                 Toast.makeText(this,"Bluetooth wasn't enabled", Toast.LENGTH_LONG).show();
                 //I disable the bluetooth as stated by the user
             }
@@ -235,11 +240,9 @@ public class ScanningActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         if(requestCode == REQUEST_FINE_LOCATION) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                //hard coded
                 Toast.makeText(this, "Location services enabled", Toast.LENGTH_SHORT).show();
                 Log.d("result location request", "fine location has been granted");
             } else if(grantResults[0] == PackageManager.PERMISSION_DENIED){
-                //hard coded
                 Toast.makeText(this, "Location services must be enabled to use the app", Toast.LENGTH_LONG).show();
                 Log.d("result location request", "fine location wasn't granted");
                 finish();

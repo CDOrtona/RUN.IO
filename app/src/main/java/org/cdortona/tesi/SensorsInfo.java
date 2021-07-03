@@ -334,17 +334,18 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == StaticResources.REQUEST_CODE_SCAN_ACTIVITY && resultCode != Activity.RESULT_CANCELED){
-            deviceAddress = data.getStringExtra(StaticResources.EXTRA_CHOOSEN_ADDRESS);
-            deviceName = data.getStringExtra(StaticResources.EXTRA_CHOOSEN_NAME);
-            //Setting the values of the TextViews objects
-            addressInfo.setTypeface(Typeface.SANS_SERIF);
-            addressInfo.setText(deviceAddress);
-            nameInfo.setTypeface(Typeface.SANS_SERIF);
-            nameInfo.setText(deviceName);
-            flagDeviceFound = true;
-        } else {
-            flagDeviceFound = false;
+        if(requestCode == StaticResources.REQUEST_CODE_SCAN_ACTIVITY) {
+            if (resultCode == Activity.RESULT_OK) {
+                deviceAddress = data.getStringExtra(StaticResources.EXTRA_CHOOSEN_ADDRESS);
+                deviceName = data.getStringExtra(StaticResources.EXTRA_CHOOSEN_NAME);
+                //Setting the values of the TextViews objects
+                addressInfo.setTypeface(Typeface.SANS_SERIF);
+                addressInfo.setText(deviceAddress);
+                nameInfo.setTypeface(Typeface.SANS_SERIF);
+                nameInfo.setText(deviceName);
+                flagDeviceFound = true;
+            } else if (resultCode == Activity.RESULT_CANCELED)
+                flagDeviceFound = false;
         }
     }
 
@@ -372,7 +373,7 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
         @Override
         public void onReceive(Context context, Intent intent) {
             final String broadcastReceived = intent.getAction();
-            Log.d("bleBroadCastReceiver", "The received Broadcast is: " + broadcastReceived);
+            Log.d(TAG, "The received Broadcast is: " + broadcastReceived);
 
             switch (Objects.requireNonNull(broadcastReceived)) {
 
@@ -479,8 +480,8 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
                 @Override
                 public void onSuccess(Location location) {
                     //location is null if there is no known location found
-                    position = Math.round(location.getLongitude() * 100d) / 100d + "," +
-                             + Math.round(location.getLatitude() * 100d) / 100d;
+                    position =  Math.round(location.getLatitude() * 100d) / 100d + "," +
+                             + Math.round(location.getLongitude() * 100d) / 100d;
                     gpsValue.setText(position);
                 }
             });
@@ -496,7 +497,7 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
                 @Override
                 public void run() {
                     if(stateConnection == null){
-                        Log.w("connectToGatt", "Timeout connection to remote peripheral");
+                        Log.w(TAG, "Timeout connection to remote peripheral");
                         Toast.makeText(getApplicationContext(), "The connection has timed out, try again", Toast.LENGTH_SHORT).show();
                         connectionStateString(StaticResources.STATE_DISCONNECTED);
                         disconnectFromGatt();
