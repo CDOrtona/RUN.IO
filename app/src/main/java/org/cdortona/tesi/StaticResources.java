@@ -69,4 +69,5 @@ final class StaticResources {
     static final String EXTRA_CHOOSEN_ADDRESS = PACKAGE_NAME + ".address";
     static final String EXTRA_CHOOSEN_NAME = PACKAGE_NAME + ".name";
     static final int REQUEST_CODE_SCAN_ACTIVITY = 1;
+    static final int REQUEST_CODE_CHANGE_PROFILE_PIC = 2;
 }

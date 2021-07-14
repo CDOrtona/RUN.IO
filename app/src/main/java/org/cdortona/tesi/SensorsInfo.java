@@ -16,6 +16,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.hardware.Sensor;
@@ -33,6 +35,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,6 +47,8 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -70,6 +75,7 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
     private boolean flagDeviceFound = false;
 
     //TextView initialization
+    ImageView profilePic;
     TextView userName;
     TextView addressInfo;
     TextView nameInfo;
@@ -121,6 +127,7 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
 
         //UI setup
         userName = findViewById(R.id.user_name);
+        profilePic = findViewById(R.id.profile_image);
         addressInfo = findViewById(R.id.address_textView);
         nameInfo = findViewById(R.id.name_textView);
         connectionState = findViewById(R.id.connection_state_textView);
@@ -145,7 +152,7 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
         locationList = new ArrayList<>();
 
         //built-in sensor
-        sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         pedometer = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
 
 
@@ -159,40 +166,47 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
         toolbar = findViewById(R.id.toolbar_sensors);
         setSupportActionBar(toolbar);
 
+        user = new UserModel();
+
         //preferences
         preferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
         //I need this so that when the app starts it knows which is the stored value of this preference
         emergencyBoolean = preferences.getBoolean("emergency_checkbox", true);
+        userName.setText(preferences.getString("user_name", "set you username"));
         preferences.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
-                switch (s){
+                switch (s) {
                     case "emergency_checkbox":
                         emergencyBoolean = sharedPreferences.getBoolean("emergency_checkbox", false);
                         break;
                     case "user_name":
-                        userName.setText(sharedPreferences.getString("user_name", "cristian"));
+                        user.setName(sharedPreferences.getString("user_name", "Cristian"));
+                        userName.setText(user.getName());
                         break;
                 }
             }
         });
-        user = new UserModel();
-        user.setName(preferences.getString("user_name", "Cristian"));
+
         user.setGender(preferences.getString("user_gender", "Male"));
         user.setAge(preferences.getString("user_age", "23"));
         user.setWeight(preferences.getString("user_weight", "85"));
-        //user.setWeight(preferences.getInt("user_weight", 85));
-        /*user = new UserModel(preferences.getString("user_name", "Cristian"),
-                preferences.getString("user_gender", "Male"), preferences.getInt("user_age", 23),
-                preferences.getInt("user_weight", 85));*/
 
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        userName.setText(user.getName());
+        //userName.setText(user.getName());
         locationUpdate();
+    }
+
+
+
+    public void changeProfilePic(View view) {
+        Intent choosePic = new Intent(Intent.ACTION_PICK);
+        choosePic.setType("image/*");
+        startActivityForResult(choosePic, StaticResources.REQUEST_CODE_CHANGE_PROFILE_PIC);
     }
 
     //Toolbar set up
@@ -206,24 +220,24 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case(R.id.action_connect_to_peripheral):
+            case (R.id.action_connect_to_peripheral):
                 Intent scanDevices = new Intent(SensorsInfo.this, ScanningActivity.class);
-                try{
+                try {
                     startActivityForResult(scanDevices, StaticResources.REQUEST_CODE_SCAN_ACTIVITY);
-                } catch (ActivityNotFoundException e){
+                } catch (ActivityNotFoundException e) {
                     e.printStackTrace();
                     finish();
                 }
                 return true;
 
             case (R.id.action_emergency):
-                if(emergencyBoolean){
+                if (emergencyBoolean) {
                     mqttService = new Intent(this, MqttService.class);
                     mqttService.putExtra(StaticResources.EXTRA_SOS_FLAG, true);
                     mqttService.putExtra(StaticResources.EXTRA_LOCATION, position);
                     startService(mqttService);
                     //I have to make sure the user agrees with the phone permissions at run-time
-                    if(phoneCallPermissions()) {
+                    if (phoneCallPermissions()) {
                         Intent callIntent = new Intent(Intent.ACTION_CALL);
                         callIntent.setData(Uri.parse("tel:" + preferences.getString("relative_phone", "331")));
                         startActivity(callIntent);
@@ -244,9 +258,9 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
             case (R.id.action_graph_rssi):
                 Intent rssiGraph = new Intent(SensorsInfo.this, GraphRssi.class);
                 rssiGraph.putExtra(StaticResources.EXTRA_CHOOSEN_ADDRESS, deviceAddress);
-                try{
+                try {
                     startActivity(rssiGraph);
-                } catch (ActivityNotFoundException e){
+                } catch (ActivityNotFoundException e) {
                     e.printStackTrace();
                     finish();
                 }
@@ -258,7 +272,7 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
                 mqttService.putExtra(StaticResources.EXTRA_LOCATION, position);
                 try {
                     startService(mqttService);
-                } catch (IllegalStateException | SecurityException e){
+                } catch (IllegalStateException | SecurityException e) {
                     e.printStackTrace();
                 }
                 return true;
@@ -279,8 +293,9 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
 
     //ask for phone call permissions
     private final int MY_PERMISSIONS_REQUEST_CALL_PHONE = 1;
-    public boolean phoneCallPermissions(){
-        if (ContextCompat.checkSelfPermission(this,Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+
+    public boolean phoneCallPermissions() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
 
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CALL_PHONE}, MY_PERMISSIONS_REQUEST_CALL_PHONE);
 
@@ -334,8 +349,8 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == StaticResources.REQUEST_CODE_SCAN_ACTIVITY) {
-            if (resultCode == Activity.RESULT_OK) {
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == StaticResources.REQUEST_CODE_SCAN_ACTIVITY) {
                 deviceAddress = data.getStringExtra(StaticResources.EXTRA_CHOOSEN_ADDRESS);
                 deviceName = data.getStringExtra(StaticResources.EXTRA_CHOOSEN_NAME);
                 //Setting the values of the TextViews objects
@@ -344,19 +359,33 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
                 nameInfo.setTypeface(Typeface.SANS_SERIF);
                 nameInfo.setText(deviceName);
                 flagDeviceFound = true;
-            } else if (resultCode == Activity.RESULT_CANCELED)
-                flagDeviceFound = false;
+            }
+
+            else if (requestCode == StaticResources.REQUEST_CODE_CHANGE_PROFILE_PIC) {
+                final Uri imageUri = data.getData();
+                InputStream imageStream = null;
+                try {
+                     imageStream = getContentResolver().openInputStream(imageUri);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
+                profilePic.setImageBitmap(selectedImage);
+            }
         }
+
+        else if (resultCode == Activity.RESULT_CANCELED)
+            flagDeviceFound = false;
     }
 
     @Override
     public void onSensorChanged(SensorEvent event) {
         Sensor sensorChanged = event.sensor;
         float[] values = event.values;
-        if(values.length > 0){
-            switch (sensorChanged.getType()){
+        if (values.length > 0) {
+            switch (sensorChanged.getType()) {
                 case Sensor.TYPE_STEP_COUNTER:
-                    if(connectedToGatt)
+                    if (connectedToGatt)
                         pedometerValue.setText(Float.toString(values[0]));
             }
         }
@@ -393,7 +422,7 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
                 //this received broadcast lets the activity that subbed to this intent filter know which is the characteristic that has changed
                 case StaticResources.ACTION_CHARACTERISTIC_CHANGED_READ:
                     Log.d("whichCharChanged", StaticResources.EXTRA_CHARACTERISTIC_CHANGED);
-                    switch (intent.getStringExtra(StaticResources.EXTRA_CHARACTERISTIC_CHANGED)){
+                    switch (intent.getStringExtra(StaticResources.EXTRA_CHARACTERISTIC_CHANGED)) {
                         case StaticResources.ESP32_TEMP_CHARACTERISTIC:
                             temp = intent.getStringExtra(StaticResources.EXTRA_TEMP_VALUE);
                             tempValue.setText(temp);
@@ -402,7 +431,7 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
                             heartBeat = intent.getStringExtra(StaticResources.EXTRA_HEART_VALUE);
                             heartValue.setText(heartBeat);
                             break;
-                        case  StaticResources.ESP32_HUMIDITY_CHARACTERISTIC:
+                        case StaticResources.ESP32_HUMIDITY_CHARACTERISTIC:
                             humidity = intent.getStringExtra(StaticResources.EXTRA_HUMIDITY_VALUE);
                             humidityValue.setText(humidity);
                             break;
@@ -420,9 +449,10 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
     };
 
     boolean fitnessActivityStarted = false;
+
     //pop up menu to choose fitness activity
-    public void calculateCalories(View view){
-        if(!fitnessActivityStarted){
+    public void calculateCalories(View view) {
+        if (!fitnessActivityStarted) {
             fitnessActivityStarted = true;
             calories.setText("0 Kcal");
             PopupMenu popupMenu = new PopupMenu(getApplicationContext(), view);
@@ -468,20 +498,19 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
         }
     };
 
-    private void accessLocation(){
+    private void accessLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 2);
             Log.d(TAG, "Location permission disabled, sent request permission activation dialog");
             accessLocation();
-        }
-        else {
+        } else {
             Log.d(TAG, "Location permission enabled");
             locationProviderClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
                 @Override
                 public void onSuccess(Location location) {
                     //location is null if there is no known location found
-                    position =  Math.round(location.getLatitude() * 100d) / 100d + "," +
-                             + Math.round(location.getLongitude() * 100d) / 100d;
+                    position = Math.round(location.getLatitude() * 100d) / 100d + "," +
+                            +Math.round(location.getLongitude() * 100d) / 100d;
                     gpsValue.setText(position);
                 }
             });
@@ -490,13 +519,13 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
 
     //add an if that checks if the adaptor is connected to the GATT server already
     public void connectToGatt() {
-        if(flagDeviceFound){
+        if (flagDeviceFound) {
             connectToGattServer.connectToGatt(deviceAddress);
             //this makes sure that there is a time out error if it takes more than 10 seconds to connect to the remote peripheral
             new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    if(stateConnection == null){
+                    if (stateConnection == null) {
                         Log.w(TAG, "Timeout connection to remote peripheral");
                         Toast.makeText(getApplicationContext(), "The connection has timed out, try again", Toast.LENGTH_SHORT).show();
                         connectionStateString(StaticResources.STATE_DISCONNECTED);
@@ -523,7 +552,7 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
     }
 
     //this dynamically changes the string color and text of the string that shows on screen the connection state
-    private void connectionStateString(String state){
+    private void connectionStateString(String state) {
         switch (state) {
             case StaticResources.STATE_CONNECTED:
                 connectionState.setTextColor(Color.GREEN);
@@ -539,4 +568,5 @@ public class SensorsInfo extends AppCompatActivity implements SensorEventListene
                 break;
         }
     }
+
 }
