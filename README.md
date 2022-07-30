@@ -43,7 +43,7 @@
 # About The Project
 
 <div align="center"> 
-  <img src="https://github.com/CDOrtona/RUN.IO/blob/master/media/E2EArch.png" width="200" />
+  <img src="https://github.com/CDOrtona/RUN.IO/blob/master/media/E2EArch.png" width="500" />
 </div>
 
 The MQTT protocol is supposed to be used at the application layer for transmitting
@@ -94,7 +94,7 @@ The GATT server hierarchy which has been defined is illustrated below.
 The full code can be found [here](https://github.com/CDOrtona/RUN.IO/tree/master/ESP32%20GATT_SERVER).
 
 <div align="center"> 
-  <img src="https://github.com/CDOrtona/RUN.IO/blob/master/media/gattHierarchy.png" width="200" />
+  <img src="https://github.com/CDOrtona/RUN.IO/blob/master/media/gattHierarchy.png" width="500" />
 </div>
 
 ## Android Gateway
@@ -113,7 +113,7 @@ the MQTT messaging protocol is used to comunicate with other Android devices and
 The Android app developed is depicted below.
 
 <div align="center"> 
-  <img src="https://github.com/CDOrtona/RUN.IO/blob/master/media/app_main_activity.png" width="200" />
+  <img src="https://github.com/CDOrtona/RUN.IO/blob/master/media/app_main_activity.png" width="300" />
 </div>
 
 
@@ -137,7 +137,7 @@ the web-service, hence, we resorted to the use of MQTT over web-sockets.
 The full code can be found [here](https://github.com/CDOrtona/MQTT_WebSocket_Javascript_Client).
 
 <div align="center"> 
-  <img src="https://github.com/CDOrtona/RUN.IO/blob/master/media/dashboard_mqtt.png" width="200" />
+  <img src="https://github.com/CDOrtona/RUN.IO/blob/master/media/dashboard_mqtt.png" width="500" />
 </div>
 
 ## Paper
